@@ -7,14 +7,27 @@
 <body>
   <header>shield<small id="site">—</small></header>
   <main id="list"></main>
-  <footer><span id="tabTotal">0</span> blocked on this page · <span id="sessionTotal">0</span> this session · always on</footer>
+  <footer>
+    <div style="margin-bottom:8px;"><span id="tabTotal">0</span> blocked on this page · <span id="sessionTotal">0</span> this session</div>
+    <button class="btn danger" id="toggle" style="width:100%;">disable shield on this site</button>
+  </footer>
 <script>
   (async () => {
     const data = await window.noctra.getShieldData();
     document.getElementById('site').textContent = data.site || 'no page';
     document.getElementById('tabTotal').textContent = data.total;
     document.getElementById('sessionTotal').textContent = data.sessionTotal;
+    const btn = document.getElementById('toggle');
+    if (data.shieldOff) {
+      btn.textContent = '✓ re-enable shield on this site';
+      btn.classList.remove('danger');
+    }
+    btn.onclick = () => window.noctra.toggleShieldSite();
     const list = document.getElementById('list');
+    if (data.shieldOff) {
+      list.innerHTML = '<div class="empty"># shield is DOWN on this site.<br>ads and trackers load freely — reload happens on toggle.</div>';
+      return;
+    }
     if (!data.hosts.length) {
       list.innerHTML = '<div class="empty"># nothing to block here.<br>clean page — they do exist.</div>';
       return;

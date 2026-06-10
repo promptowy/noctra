@@ -2,7 +2,18 @@ const { app, BrowserWindow, WebContentsView, ipcMain, session, Menu } = require(
 const path = require('path');
 const fs = require('fs');
 const COSMETIC_CSS = require('./cosmetic');
-const { ElectronBlocker } = require('@ghostery/adblocker-electron');
+const { FiltersEngine, Request } = require('@ghostery/adblocker');
+
+const ADBLOCK_TYPE = {
+  mainFrame: 'main_frame', subFrame: 'sub_frame', stylesheet: 'stylesheet',
+  script: 'script', image: 'image', font: 'font', object: 'object',
+  xhr: 'xmlhttprequest', ping: 'ping', cspReport: 'csp_report',
+  media: 'media', webSocket: 'websocket'
+};
+
+function normHost(url) {
+  try { return new URL(url).hostname.toLowerCase().replace(/^www\./, ''); } catch { return null; }
+}
 
 // Sites with bot protection reject the Electron token — present a clean Chrome UA.
 app.userAgentFallback = app.userAgentFallback
@@ -26,7 +37,7 @@ let sessionBlocked = 0;
 
 // ---------- Settings ----------
 const settingsFile = () => path.join(app.getPath('userData'), 'settings.json');
-let settings = { searchEngine: 'duckduckgo', homepage: 'https://duckduckgo.com' };
+let settings = { searchEngine: 'duckduckgo', homepage: 'https://duckduckgo.com', shieldOffSites: [] };
 function loadSettings() {
   try { settings = { ...settings, ...JSON.parse(fs.readFileSync(settingsFile(), 'utf8')) }; } catch {}
 }
@@ -62,32 +73,48 @@ function tabByWcId(wcId) {
 }
 
 // Full filter engine (EasyList + EasyPrivacy + EasyList Polish + cookie banners),
-// compiled at release time into assets/adblock-engine.bin — same class of blocking as Brave.
+// compiled at release time into assets/adblock-engine.bin. Network matching only —
+// no injected cosmetics from the engine, so pages can never be left hidden by it.
 let blocker = null;
 function loadBlocker() {
-  blocker = ElectronBlocker.deserialize(
+  blocker = FiltersEngine.deserialize(
     fs.readFileSync(path.join(__dirname, 'assets', 'adblock-engine.bin'))
   );
-  blocker.on('request-blocked', (req) => {
-    sessionBlocked++;
-    const t = tabByWcId(req.tabId);
-    if (t) {
-      let host = null;
-      try { host = new URL(req.url).hostname; } catch {}
-      if (host) {
-        t.blocked.set(host, (t.blocked.get(host) || 0) + 1);
-        t.blockedTotal++;
-      }
-    }
-    sendTabsState();
-  });
+}
+
+function shieldOffFor(host) {
+  return !!host && settings.shieldOffSites.includes(host);
 }
 
 const shieldedSessions = new WeakSet();
 function setupShield(ses) {
   if (shieldedSessions.has(ses)) return;
   shieldedSessions.add(ses);
-  blocker.enableBlockingInSession(ses);
+  ses.webRequest.onBeforeRequest({ urls: ['*://*/*'] }, (details, callback) => {
+    if (details.resourceType === 'mainFrame') return callback({});
+    const t = tabByWcId(details.webContentsId);
+    const pageUrl = t ? t.view.webContents.getURL() : (details.referrer || '');
+    if (shieldOffFor(normHost(pageUrl))) return callback({});
+    const { match } = blocker.match(Request.fromRawDetails({
+      url: details.url,
+      type: ADBLOCK_TYPE[details.resourceType] || 'other',
+      sourceUrl: pageUrl
+    }));
+    if (match) {
+      sessionBlocked++;
+      if (t) {
+        let host = null;
+        try { host = new URL(details.url).hostname; } catch {}
+        if (host) {
+          t.blocked.set(host, (t.blocked.get(host) || 0) + 1);
+          t.blockedTotal++;
+        }
+      }
+      sendTabsState();
+      return callback({ cancel: true });
+    }
+    callback({});
+  });
   ses.webRequest.onBeforeSendHeaders((details, callback) => {
     const headers = details.requestHeaders;
     headers['DNT'] = '1';
@@ -112,6 +139,7 @@ function sendTabsState() {
     profileColor: (profiles.find(p => p.name === t.profile) || profiles[0]).color,
     active: id === activeTabId,
     blocked: t.blockedTotal,
+    shieldOff: shieldOffFor(normHost(t.view.webContents.getURL())),
     canGoBack: t.view.webContents.navigationHistory.canGoBack(),
     canGoForward: t.view.webContents.navigationHistory.canGoForward(),
     loading: t.view.webContents.isLoading()
@@ -142,7 +170,21 @@ function createTab(url = settings.homepage, profileName = activeProfile) {
     if (t) { t.blocked = new Map(); t.blockedTotal = 0; }
   });
   wc.on('did-finish-load', () => {
+    if (shieldOffFor(normHost(wc.getURL()))) return;
     wc.insertCSS(COSMETIC_CSS).catch(() => {});
+    // Anti-hide watchdog: some sites keep <html>/<body> hidden until a consent
+    // manager or ad script (which we block) reports back. Unhide them.
+    wc.executeJavaScript(`(() => {
+      const unhide = () => {
+        for (const el of [document.documentElement, document.body]) {
+          if (el && getComputedStyle(el).display === 'none') el.style.setProperty('display', 'block', 'important');
+          if (el && getComputedStyle(el).visibility === 'hidden') el.style.setProperty('visibility', 'visible', 'important');
+        }
+      };
+      let n = 0;
+      const iv = setInterval(() => { unhide(); if (++n >= 10) clearInterval(iv); }, 700);
+      unhide();
+    })()`, true).catch(() => {});
   });
   wc.setWindowOpenHandler(({ url }) => {
     createTab(url, profileName);
@@ -307,10 +349,27 @@ app.whenReady().then(() => {
     try { url = t ? new URL(t.view.webContents.getURL()).hostname : ''; } catch {}
     return {
       site: url,
+      shieldOff: shieldOffFor(normHost(t ? t.view.webContents.getURL() : '')),
       total: t ? t.blockedTotal : 0,
       sessionTotal: sessionBlocked,
       hosts: t ? [...t.blocked.entries()].map(([host, count]) => ({ host, count })).sort((a, b) => b.count - a.count) : []
     };
+  });
+
+  // per-site shield toggle (Brave-style "shields down" for stubborn sites)
+  ipcMain.on('toggle-shield-site', () => {
+    closePopup();
+    const t = tabs.get(activeTabId);
+    if (!t) return;
+    const host = normHost(t.view.webContents.getURL());
+    if (!host) return;
+    const i = settings.shieldOffSites.indexOf(host);
+    if (i >= 0) settings.shieldOffSites.splice(i, 1);
+    else settings.shieldOffSites.push(host);
+    saveSettings();
+    t.blocked = new Map();
+    t.blockedTotal = 0;
+    t.view.webContents.reload();
   });
 
   // profiles

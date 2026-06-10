@@ -99,6 +99,7 @@
   .chip:hover { border-color: var(--green); }
   #shield { color: var(--green); font-weight: 700; }
   #shield .x { font-weight: 400; }
+  #shield.off { color: var(--dim); border-style: dashed; }
   #profile .pdot { width: 8px; height: 8px; background: var(--green); }
 </style>
 </head>
@@ -150,7 +151,8 @@
         if (!urlFocused) $('url').value = t.url;
         $('back').disabled = !t.canGoBack;
         $('forward').disabled = !t.canGoForward;
-        $('blocked').textContent = t.blocked;
+        $('blocked').textContent = t.shieldOff ? 'off' : t.blocked;
+        $('shield').classList.toggle('off', !!t.shieldOff);
       }
     }
     const ap = state.profiles.find(p => p.name === state.activeProfile) || state.profiles[0];

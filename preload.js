@@ -18,6 +18,7 @@ contextBridge.exposeInMainWorld('noctra', {
 
   // shield
   getShieldData: () => ipcRenderer.invoke('get-shield-data'),
+  toggleShieldSite: () => ipcRenderer.send('toggle-shield-site'),
 
   // profiles
   getProfiles: () => ipcRenderer.invoke('get-profiles'),
