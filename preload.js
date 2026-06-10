@@ -10,6 +10,7 @@ contextBridge.exposeInMainWorld('noctra', {
   goForward: () => ipcRenderer.send('go-forward'),
   reload: () => ipcRenderer.send('reload'),
   onTabsUpdated: (cb) => ipcRenderer.on('tabs-updated', (_e, state) => cb(state)),
+  onFocusUrl: (cb) => ipcRenderer.on('focus-url', () => cb()),
 
   // popups
   openPopup: (type, anchorX) => ipcRenderer.send('open-popup', { type, anchorX }),

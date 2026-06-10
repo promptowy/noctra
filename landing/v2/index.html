@@ -70,19 +70,25 @@
   h2::before { content: "## "; color: var(--dim); }
   .lead { color: var(--dim); font-size: 13px; margin-top: 8px; }
 
-  /* ---- comparison: cards on mobile, table-like grid on desktop ---- */
-  .vs { margin: 26px 0 10px; display: flex; flex-direction: column; gap: 14px; }
-  .vs-row { border: 1px solid var(--line); padding: 16px 18px; }
-  .vs-row .cap { color: var(--fg); font-size: 13.5px; margin-bottom: 12px; }
-  .vs-row .cap::before { content: "▸ "; color: var(--green); }
-  .vs-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-  .vs-cell { text-align: center; font-size: 12px; padding: 8px 4px; background: #101410; }
-  .vs-cell b { display: block; color: var(--dim); font-weight: 400; font-size: 10.5px; margin-bottom: 4px; letter-spacing: 1px; }
-  .vs-cell.noctra { outline: 1px solid var(--green); }
-  .y { color: var(--green); }
-  .n { color: var(--red); }
-  .m { color: var(--amber); }
-  .d { color: var(--dim); }
+  /* ---- comparison: bold colour-coded cards ---- */
+  .vs { margin: 26px 0 10px; display: flex; flex-direction: column; gap: 16px; }
+  .vs-row { border: 1px solid var(--line); border-left: 3px solid var(--green); padding: 18px; background: #0e120e; }
+  .vs-row .cap { color: var(--fg); font-size: 15px; font-weight: 700; margin-bottom: 14px; }
+  .vs-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .vs-cell {
+    text-align: center; font-size: 13.5px; font-weight: 700;
+    padding: 12px 6px 11px; border: 1px solid transparent;
+  }
+  .vs-cell b {
+    display: block; font-weight: 700; font-size: 10px;
+    margin-bottom: 6px; letter-spacing: 1.5px; opacity: .75;
+  }
+  .vs-cell.noctra { background: var(--green); color: #0c0f0c; }
+  .vs-cell.noctra b { opacity: .65; }
+  .vs-cell.good { background: rgba(52,210,75,.13); border-color: rgba(52,210,75,.35); color: var(--green); }
+  .vs-cell.mid { background: rgba(210,168,52,.12); border-color: rgba(210,168,52,.3); color: var(--amber); }
+  .vs-cell.bad { background: rgba(210,75,75,.12); border-color: rgba(210,75,75,.35); color: var(--red); }
+  .vs-cell.na { background: #121612; border-color: var(--line); color: var(--dim); }
 
   .chart { margin: 26px 0 10px; }
   .chart .crow { display: grid; grid-template-columns: 84px 1fr 64px; gap: 10px; align-items: center; margin: 12px 0; font-size: 12.5px; }
@@ -146,10 +152,10 @@
     <h1>Every tracker on every page:<br><span class="g">connection refused.</span><span class="cursor"></span></h1>
     <p>noctra is a Chromium-based browser that cancels ad and tracking requests before they leave your machine. cookie walls hidden. zero telemetry. zero configuration — protection is not a feature you toggle, it's the default state of the program.</p>
     <div class="cta" id="download">
-      <a class="btn solid" href="https://github.com/promptowy/noctra/releases/latest/download/Noctra-Setup-1.0.0.exe">⬇ download installer (.exe)</a>
-      <a class="btn" href="https://github.com/promptowy/noctra/releases/latest/download/Noctra-1.0-Windows-x64.zip">portable .zip — no install</a>
+      <a class="btn solid" href="https://github.com/promptowy/noctra/releases/latest/download/Noctra-Setup.exe">⬇ download for windows (.exe)</a>
+      <a class="btn" href="https://github.com/promptowy/noctra/releases">view releases on github</a>
     </div>
-    <div class="sub">windows 10/11 x64 · free · no account · auto-updates · MIT-licensed core · <a href="https://github.com/promptowy/noctra/releases" style="color:inherit">all releases &amp; source on github →</a></div>
+    <div class="sub">windows 10/11 x64 · free · no account · auto-updates · MIT-licensed core</div>
   </div>
 
   <div class="log-box"><div class="log"><span class="dim"># a typical news page, opened in noctra</span>
@@ -167,55 +173,55 @@ GET  taboola.com/recommendations      <span class="ok">✕ BLOCKED</span>
     <div class="vs-row">
       <div class="cap">ads &amp; trackers blocked out of the box</div>
       <div class="vs-grid">
-        <div class="vs-cell noctra"><b>NOCTRA</b><span class="y">✓ always</span></div>
-        <div class="vs-cell"><b>BRAVE</b><span class="m">✓ can be off</span></div>
-        <div class="vs-cell"><b>FIREFOX</b><span class="m">partial</span></div>
-        <div class="vs-cell"><b>CHROME</b><span class="n">✗</span></div>
+        <div class="vs-cell noctra"><b>NOCTRA</b>✓ always</div>
+        <div class="vs-cell mid"><b>BRAVE</b>✓ can be off</div>
+        <div class="vs-cell mid"><b>FIREFOX</b>partial</div>
+        <div class="vs-cell bad"><b>CHROME</b>✗ none</div>
       </div>
     </div>
     <div class="vs-row">
       <div class="cap">cookie walls hidden automatically</div>
       <div class="vs-grid">
-        <div class="vs-cell noctra"><b>NOCTRA</b><span class="y">✓</span></div>
-        <div class="vs-cell"><b>BRAVE</b><span class="m">partial</span></div>
-        <div class="vs-cell"><b>FIREFOX</b><span class="m">partial</span></div>
-        <div class="vs-cell"><b>CHROME</b><span class="n">✗</span></div>
+        <div class="vs-cell noctra"><b>NOCTRA</b>✓ yes</div>
+        <div class="vs-cell mid"><b>BRAVE</b>partial</div>
+        <div class="vs-cell mid"><b>FIREFOX</b>partial</div>
+        <div class="vs-cell bad"><b>CHROME</b>✗ none</div>
       </div>
     </div>
     <div class="vs-row">
       <div class="cap">per-page report of what got blocked</div>
       <div class="vs-grid">
-        <div class="vs-cell noctra"><b>NOCTRA</b><span class="y">✓ click the ✕</span></div>
-        <div class="vs-cell"><b>BRAVE</b><span class="y">✓</span></div>
-        <div class="vs-cell"><b>FIREFOX</b><span class="y">✓</span></div>
-        <div class="vs-cell"><b>CHROME</b><span class="d">—</span></div>
+        <div class="vs-cell noctra"><b>NOCTRA</b>✓ click the ✕</div>
+        <div class="vs-cell good"><b>BRAVE</b>✓ yes</div>
+        <div class="vs-cell good"><b>FIREFOX</b>✓ yes</div>
+        <div class="vs-cell na"><b>CHROME</b>—</div>
       </div>
     </div>
     <div class="vs-row">
       <div class="cap">telemetry sent to the vendor</div>
       <div class="vs-grid">
-        <div class="vs-cell noctra"><b>NOCTRA</b><span class="y">none</span></div>
-        <div class="vs-cell"><b>BRAVE</b><span class="m">some</span></div>
-        <div class="vs-cell"><b>FIREFOX</b><span class="m">some</span></div>
-        <div class="vs-cell"><b>CHROME</b><span class="n">extensive</span></div>
+        <div class="vs-cell noctra"><b>NOCTRA</b>zero</div>
+        <div class="vs-cell mid"><b>BRAVE</b>some</div>
+        <div class="vs-cell mid"><b>FIREFOX</b>some</div>
+        <div class="vs-cell bad"><b>CHROME</b>extensive</div>
       </div>
     </div>
     <div class="vs-row">
       <div class="cap">crypto / rewards / sponsored content</div>
       <div class="vs-grid">
-        <div class="vs-cell noctra"><b>NOCTRA</b><span class="y">none</span></div>
-        <div class="vs-cell"><b>BRAVE</b><span class="n">BAT, wallet, ads</span></div>
-        <div class="vs-cell"><b>FIREFOX</b><span class="m">sponsored tiles</span></div>
-        <div class="vs-cell"><b>CHROME</b><span class="y">none</span></div>
+        <div class="vs-cell noctra"><b>NOCTRA</b>none</div>
+        <div class="vs-cell bad"><b>BRAVE</b>BAT + wallet</div>
+        <div class="vs-cell mid"><b>FIREFOX</b>sponsored tiles</div>
+        <div class="vs-cell good"><b>CHROME</b>none</div>
       </div>
     </div>
     <div class="vs-row">
       <div class="cap">settings screen length</div>
       <div class="vs-grid">
-        <div class="vs-cell noctra"><b>NOCTRA</b><span class="y">one popup</span></div>
-        <div class="vs-cell"><b>BRAVE</b><span class="n">34 sub-pages</span></div>
-        <div class="vs-cell"><b>FIREFOX</b><span class="n">12 sub-pages</span></div>
-        <div class="vs-cell"><b>CHROME</b><span class="n">20+ sub-pages</span></div>
+        <div class="vs-cell noctra"><b>NOCTRA</b>one popup</div>
+        <div class="vs-cell bad"><b>BRAVE</b>34 sub-pages</div>
+        <div class="vs-cell bad"><b>FIREFOX</b>12 sub-pages</div>
+        <div class="vs-cell bad"><b>CHROME</b>20+ sub-pages</div>
       </div>
     </div>
   </div>
@@ -265,8 +271,8 @@ GET  taboola.com/recommendations      <span class="ok">✕ BLOCKED</span>
       <dd>rarely. blocking is surgical — content requests pass, surveillance requests don't.</dd>
       <dt>chromium? so it's like chrome?</dt>
       <dd>same engine, opposite philosophy. full web compatibility, none of the reporting back.</dd>
-      <dt>installer or portable?</dt>
-      <dd>your call. the installer adds a start-menu entry and auto-updates itself. the .zip runs from any folder, even a pendrive — no admin rights, no traces in the registry.</dd>
+      <dt>does it need admin rights?</dt>
+      <dd>no. the installer is per-user — one click, no UAC prompt, and it keeps itself up to date automatically.</dd>
       <dt>windows says "unknown publisher"?</dt>
       <dd>the build isn't code-signed yet (certificates cost money; the project is young). click "more info → run anyway", or read the source and build it yourself — it's all on github.</dd>
     </dl>
@@ -275,10 +281,10 @@ GET  taboola.com/recommendations      <span class="ok">✕ BLOCKED</span>
   <div class="dl-final">
     <h2 style="margin-top:0;">ready when you are</h2>
     <div class="cta" style="justify-content:center; margin-top:20px;">
-      <a class="btn solid" href="https://github.com/promptowy/noctra/releases/latest/download/Noctra-Setup-1.0.0.exe">⬇ download installer (.exe)</a>
-      <a class="btn" href="https://github.com/promptowy/noctra/releases/latest/download/Noctra-1.0-Windows-x64.zip">portable .zip</a>
+      <a class="btn solid" href="https://github.com/promptowy/noctra/releases/latest/download/Noctra-Setup.exe">⬇ download for windows (.exe)</a>
+      <a class="btn" href="https://github.com/promptowy/noctra/releases">github releases</a>
     </div>
-    <div class="sub">~97 MB installer / ~145 MB portable · windows 10/11 x64</div>
+    <div class="sub">~97 MB · windows 10/11 x64 · installs per-user, updates itself</div>
   </div>
 
   <footer>© 2026 noctra — exit code 0. no cookies, no analytics on this page; view-source if you don't believe us.</footer>

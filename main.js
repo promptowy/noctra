@@ -1,8 +1,13 @@
-const { app, BrowserWindow, WebContentsView, ipcMain, session } = require('electron');
+const { app, BrowserWindow, WebContentsView, ipcMain, session, Menu } = require('electron');
 const path = require('path');
 const fs = require('fs');
-const BLOCKLIST = require('./blocklist');
 const COSMETIC_CSS = require('./cosmetic');
+const { ElectronBlocker } = require('@ghostery/adblocker-electron');
+
+// Sites with bot protection reject the Electron token — present a clean Chrome UA.
+app.userAgentFallback = app.userAgentFallback
+  .replace(/\s?noctra\/[\d.]+/i, '')
+  .replace(/\s?Electron\/[\d.]+/i, '');
 
 const TOOLBAR_HEIGHT = 96;
 const PROFILE_COLORS = ['#34d24b', '#22d3ee', '#f472b6', '#fbbf24', '#a78bfa', '#fb7185'];
@@ -51,38 +56,38 @@ function profileSession(name) {
 }
 
 // ---------- Shield (always on) ----------
-function blockedHost(url) {
-  let host;
-  try { host = new URL(url).hostname; } catch { return null; }
-  const hit = BLOCKLIST.find(d => host === d || host.endsWith('.' + d));
-  return hit ? host : null;
-}
-
 function tabByWcId(wcId) {
   for (const t of tabs.values()) if (t.wcId === wcId) return t;
   return null;
+}
+
+// Full filter engine (EasyList + EasyPrivacy + EasyList Polish + cookie banners),
+// compiled at release time into assets/adblock-engine.bin — same class of blocking as Brave.
+let blocker = null;
+function loadBlocker() {
+  blocker = ElectronBlocker.deserialize(
+    fs.readFileSync(path.join(__dirname, 'assets', 'adblock-engine.bin'))
+  );
+  blocker.on('request-blocked', (req) => {
+    sessionBlocked++;
+    const t = tabByWcId(req.tabId);
+    if (t) {
+      let host = null;
+      try { host = new URL(req.url).hostname; } catch {}
+      if (host) {
+        t.blocked.set(host, (t.blocked.get(host) || 0) + 1);
+        t.blockedTotal++;
+      }
+    }
+    sendTabsState();
+  });
 }
 
 const shieldedSessions = new WeakSet();
 function setupShield(ses) {
   if (shieldedSessions.has(ses)) return;
   shieldedSessions.add(ses);
-  ses.webRequest.onBeforeRequest({ urls: ['*://*/*'] }, (details, callback) => {
-    if (details.resourceType !== 'mainFrame') {
-      const host = blockedHost(details.url);
-      if (host) {
-        sessionBlocked++;
-        const t = tabByWcId(details.webContentsId);
-        if (t) {
-          t.blocked.set(host, (t.blocked.get(host) || 0) + 1);
-          t.blockedTotal++;
-        }
-        sendTabsState();
-        return callback({ cancel: true });
-      }
-    }
-    callback({});
-  });
+  blocker.enableBlockingInSession(ses);
   ses.webRequest.onBeforeSendHeaders((details, callback) => {
     const headers = details.requestHeaders;
     headers['DNT'] = '1';
@@ -142,6 +147,15 @@ function createTab(url = settings.homepage, profileName = activeProfile) {
   wc.setWindowOpenHandler(({ url }) => {
     createTab(url, profileName);
     return { action: 'deny' };
+  });
+  // Browser shortcuts must work while the page has focus (no app menu anymore).
+  wc.on('before-input-event', (e, input) => {
+    if (input.type !== 'keyDown' || !input.control) return;
+    const k = input.key.toLowerCase();
+    if (k === 't') { e.preventDefault(); createTab(); }
+    if (k === 'w') { e.preventDefault(); closeTab(id); }
+    if (k === 'r') { e.preventDefault(); wc.reload(); }
+    if (k === 'l') { e.preventDefault(); win.focus(); win.webContents.focus(); win.webContents.send('focus-url'); }
   });
 
   wc.loadURL(url);
@@ -238,6 +252,8 @@ function setupAutoUpdate() {
 }
 
 app.whenReady().then(() => {
+  Menu.setApplicationMenu(null); // no File/Edit/View bar — browsers don't have one
+  loadBlocker();
   loadProfiles();
   loadSettings();
   setupAutoUpdate();

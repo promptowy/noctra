@@ -184,6 +184,7 @@
     if (e.ctrlKey && e.key === 't') window.noctra.newTab();
     if (e.ctrlKey && e.key === 'l') url.focus();
   });
+  window.noctra.onFocusUrl(() => url.focus());
 </script>
 </body>
 </html>

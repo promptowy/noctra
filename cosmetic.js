@@ -18,4 +18,14 @@ module.exports = `
 #adblock-message, .adblock-message, .anti-adblock,
 [class*="adblock-detect"], [id*="adblock-detect"]
 { display: none !important; }
+
+/* collapse empty ad slots left behind by network-level blocking */
+ins.adsbygoogle, .adsbygoogle,
+[id^="div-gpt-ad"], [id^="google_ads_iframe"],
+[id^="ad-slot"], [class^="ad-slot"], [class*=" ad-slot"],
+[data-ad-slot], [data-google-query-id],
+iframe[src*="doubleclick.net"], iframe[src*="googlesyndication"],
+.ad-banner, .ad-wrapper, .ad-container, .adsbox,
+[class*="sponsored-slot"], [id*="sponsored-slot"]
+{ display: none !important; min-height: 0 !important; height: 0 !important; }
 `;

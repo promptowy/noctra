@@ -1,6 +1,6 @@
 {
   "name": "noctra",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Noctra — the private browser that blocks ads, trackers and cookie walls by default.",
   "main": "main.js",
   "scripts": {
@@ -17,7 +17,7 @@
   "build": {
     "appId": "com.promptowy.noctra",
     "productName": "Noctra",
-    "artifactName": "Noctra-Setup-${version}.${ext}",
+    "artifactName": "Noctra-Setup.${ext}",
     "files": [
       "main.js",
       "preload.js",
@@ -51,6 +51,8 @@
     "electron-builder": "^26.15.2"
   },
   "dependencies": {
+    "@ghostery/adblocker": "^2.18.0",
+    "@ghostery/adblocker-electron": "^2.18.0",
     "electron-updater": "^6.8.9"
   }
 }
