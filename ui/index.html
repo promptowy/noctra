@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>noctra</title>
+<style>
+  :root {
+    --bg: #0c0f0c;
+    --bg2: #111511;
+    --bg3: #161b16;
+    --fg: #d7e0d7;
+    --dim: #5f6f5f;
+    --green: #34d24b;
+    --line: #1d241d;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "Cascadia Mono", Consolas, monospace;
+    background: var(--bg);
+    color: var(--fg);
+    height: 96px;
+    overflow: hidden;
+    user-select: none;
+    font-size: 13px;
+  }
+  #tabbar {
+    display: flex;
+    align-items: stretch;
+    height: 38px;
+    padding: 6px 8px 0;
+    gap: 2px;
+    overflow-x: auto;
+    border-bottom: 1px solid var(--line);
+  }
+  .tab {
+    display: flex; align-items: center; gap: 8px;
+    min-width: 130px; max-width: 230px;
+    padding: 0 10px;
+    background: transparent;
+    border: 1px solid transparent;
+    border-bottom: none;
+    cursor: pointer;
+    color: var(--dim);
+    flex: 0 1 auto;
+  }
+  .tab.active {
+    background: var(--bg2);
+    border-color: var(--line);
+    color: var(--fg);
+    box-shadow: 0 2px 0 -1px var(--bg2);
+  }
+  .tab .dot { width: 7px; height: 7px; flex: none; background: var(--tabcolor, var(--green)); }
+  .tab .title { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 12px; }
+  .tab .close {
+    border: none; background: none; color: var(--dim);
+    font-size: 13px; cursor: pointer; width: 16px; height: 16px; line-height: 1;
+    font-family: inherit;
+  }
+  .tab .close:hover { color: var(--green); }
+  #newtab {
+    border: none; background: none; color: var(--dim);
+    font-size: 16px; cursor: pointer; width: 28px;
+    font-family: inherit;
+  }
+  #newtab:hover { color: var(--green); }
+  #toolbar {
+    display: flex; align-items: center; gap: 8px;
+    height: 57px; padding: 0 12px;
+  }
+  #logo { color: var(--green); font-weight: 700; white-space: nowrap; }
+  #logo::before { content: "$ "; }
+  .navbtn {
+    border: 1px solid transparent; background: none;
+    color: var(--fg); font-size: 14px;
+    width: 30px; height: 30px; cursor: pointer;
+    font-family: inherit;
+  }
+  .navbtn:hover:not(:disabled) { border-color: var(--line); color: var(--green); }
+  .navbtn:disabled { color: #2c352c; cursor: default; }
+  #urlbox {
+    flex: 1; display: flex; align-items: center; gap: 8px;
+    background: var(--bg2);
+    border: 1px solid var(--line);
+    padding: 0 12px; height: 36px;
+  }
+  #urlbox:focus-within { border-color: var(--green); }
+  #lock { color: var(--dim); font-size: 12px; }
+  #url {
+    flex: 1; border: none; background: none; outline: none;
+    color: var(--fg); font-size: 13px; font-family: inherit;
+  }
+  .chip {
+    display: flex; align-items: center; gap: 7px;
+    background: var(--bg2); border: 1px solid var(--line);
+    padding: 0 12px; height: 36px;
+    font-size: 12px; cursor: pointer; color: var(--fg);
+    white-space: nowrap; font-family: inherit;
+  }
+  .chip:hover { border-color: var(--green); }
+  #shield { color: var(--green); font-weight: 700; }
+  #shield .x { font-weight: 400; }
+  #profile .pdot { width: 8px; height: 8px; background: var(--green); }
+</style>
+</head>
+<body>
+  <div id="tabbar">
+    <button id="newtab" title="new tab (Ctrl+T)">+</button>
+  </div>
+  <div id="toolbar">
+    <span id="logo">noctra</span>
+    <button class="navbtn" id="back" title="back">&#60;</button>
+    <button class="navbtn" id="forward" title="forward">&#62;</button>
+    <button class="navbtn" id="reload" title="reload">&#8635;</button>
+    <div id="urlbox">
+      <span id="lock">&#9919;</span>
+      <input id="url" placeholder="search or enter address" spellcheck="false">
+    </div>
+    <button class="chip" id="shield" title="blocked on this page — click for details"><span class="x">✕</span> <span id="blocked">0</span></button>
+    <button class="chip" id="profile" title="profiles"><span class="pdot"></span><span id="profilename">Default</span> ▾</button>
+    <button class="chip" id="menu" title="menu">≡</button>
+  </div>
+<script>
+  const $ = (id) => document.getElementById(id);
+  let activeUrl = '';
+  let urlFocused = false;
+
+  window.noctra.onTabsUpdated((state) => {
+    const bar = $('tabbar');
+    bar.querySelectorAll('.tab').forEach(t => t.remove());
+    const plus = $('newtab');
+    for (const t of state.tabs) {
+      const el = document.createElement('div');
+      el.className = 'tab' + (t.active ? ' active' : '');
+      el.style.setProperty('--tabcolor', t.profileColor);
+      el.title = `[${t.profile}] ${t.url}`;
+      const dot = document.createElement('span');
+      dot.className = 'dot';
+      const title = document.createElement('span');
+      title.className = 'title';
+      title.textContent = (t.loading ? '· ' : '') + (t.title || 'new tab');
+      const close = document.createElement('button');
+      close.className = 'close';
+      close.textContent = 'x';
+      close.onclick = (e) => { e.stopPropagation(); window.noctra.closeTab(t.id); };
+      el.append(dot, title, close);
+      el.onclick = () => window.noctra.switchTab(t.id);
+      bar.insertBefore(el, plus);
+      if (t.active) {
+        activeUrl = t.url;
+        if (!urlFocused) $('url').value = t.url;
+        $('back').disabled = !t.canGoBack;
+        $('forward').disabled = !t.canGoForward;
+        $('blocked').textContent = t.blocked;
+      }
+    }
+    const ap = state.profiles.find(p => p.name === state.activeProfile) || state.profiles[0];
+    if (ap) {
+      $('profilename').textContent = ap.name;
+      $('profile').querySelector('.pdot').style.background = ap.color;
+    }
+  });
+
+  const anchor = (el) => el.getBoundingClientRect().left + el.getBoundingClientRect().width / 2;
+  $('newtab').onclick = () => window.noctra.newTab();
+  $('back').onclick = () => window.noctra.goBack();
+  $('forward').onclick = () => window.noctra.goForward();
+  $('reload').onclick = () => window.noctra.reload();
+  $('shield').onclick = () => window.noctra.openPopup('shield', anchor($('shield')));
+  $('profile').onclick = () => window.noctra.openPopup('profiles', anchor($('profile')));
+  $('menu').onclick = () => window.noctra.openPopup('menu', anchor($('menu')));
+
+  const url = $('url');
+  url.onfocus = () => { urlFocused = true; url.select(); };
+  url.onblur = () => { urlFocused = false; url.value = activeUrl; };
+  url.onkeydown = (e) => {
+    if (e.key === 'Enter' && url.value.trim()) {
+      window.noctra.navigate(url.value);
+      url.blur();
+    }
+    if (e.key === 'Escape') url.blur();
+  };
+
+  document.addEventListener('keydown', (e) => {
+    if (e.ctrlKey && e.key === 't') window.noctra.newTab();
+    if (e.ctrlKey && e.key === 'l') url.focus();
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>noctra — blocked by default</title>
+<meta name="description" content="A browser that cancels tracking requests at the network level. No telemetry. No settings. No mercy for ads.">
+<style>
+  :root {
+    --bg: #0c0f0c;
+    --fg: #d7e0d7;
+    --dim: #5f6f5f;
+    --green: #34d24b;
+    --line: #1d241d;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "Cascadia Mono", Consolas, "JetBrains Mono", monospace;
+    background: var(--bg);
+    color: var(--fg);
+    font-size: 15px;
+    line-height: 1.7;
+  }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 0 24px; }
+  header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 20px 0; border-bottom: 1px solid var(--line);
+  }
+  .prompt::before { content: "$ "; color: var(--green); }
+  header nav a { color: var(--dim); text-decoration: none; margin-left: 20px; font-size: 13px; }
+  header nav a:hover { color: var(--green); }
+  .hero { padding: 80px 0 50px; }
+  h1 {
+    font-size: clamp(26px, 4.5vw, 42px);
+    font-weight: 400; line-height: 1.3; letter-spacing: -0.5px;
+  }
+  h1 .g { color: var(--green); }
+  .cursor { display: inline-block; width: 0.55em; height: 1.1em; background: var(--green); vertical-align: text-bottom; animation: blink 1.1s steps(1) infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+  .hero p { margin-top: 26px; color: var(--dim); max-width: 600px; }
+  .btn {
+    display: inline-block; margin-top: 38px;
+    border: 1px solid var(--green); color: var(--green);
+    padding: 13px 26px; text-decoration: none; font-size: 14px;
+  }
+  .btn:hover { background: var(--green); color: var(--bg); }
+  .sub { margin-top: 12px; font-size: 12px; color: var(--dim); }
+  .log {
+    margin: 60px 0; border: 1px solid var(--line);
+    padding: 22px 24px; font-size: 13.5px;
+    overflow-x: auto; white-space: pre;
+  }
+  .log .ok { color: var(--green); }
+  .log .dim { color: var(--dim); }
+  .grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    border: 1px solid var(--line); border-bottom: none;
+    margin: 30px 0 70px;
+  }
+  .cell { border-bottom: 1px solid var(--line); padding: 26px 24px; }
+  .cell:nth-child(odd) { border-right: 1px solid var(--line); }
+  .cell h3 { font-size: 15px; font-weight: 700; color: var(--green); margin-bottom: 10px; }
+  .cell h3::before { content: "▸ "; }
+  .cell p { font-size: 13.5px; color: var(--dim); }
+  h2 { font-size: 20px; font-weight: 400; }
+  h2::before { content: "## "; color: var(--dim); }
+  table { width: 100%; border-collapse: collapse; margin: 30px 0 70px; font-size: 13px; }
+  th, td { border: 1px solid var(--line); padding: 12px 14px; text-align: left; }
+  th { color: var(--dim); font-weight: 400; }
+  th:not(:first-child), td:not(:first-child) { text-align: center; }
+  td.y { color: var(--green); }
+  td.n { color: #d24b4b; }
+  td.m { color: var(--dim); }
+  .chart { margin: 30px 0 70px; }
+  .chart .crow { display: grid; grid-template-columns: 110px 1fr 60px; gap: 14px; align-items: center; margin: 14px 0; font-size: 13px; }
+  .chart .label { color: var(--dim); text-align: right; }
+  .chart .track { background: var(--line); height: 18px; position: relative; }
+  .chart .fill { position: absolute; inset: 0 auto 0 0; }
+  .chart .fill.bad { background: #d24b4b; }
+  .chart .fill.mid { background: #d2a834; }
+  .chart .fill.good { background: var(--green); }
+  .chart .val { color: var(--fg); }
+  .chart .note { margin-top: 16px; font-size: 12px; color: var(--dim); }
+  .manifesto { border-left: 2px solid var(--green); padding: 6px 0 6px 24px; margin: 30px 0 70px; }
+  .manifesto p { color: var(--dim); margin-top: 14px; max-width: 640px; }
+  .manifesto p strong { color: var(--fg); font-weight: 700; }
+  .faq { padding-bottom: 70px; }
+  .faq dl { margin-top: 28px; }
+  .faq dt { color: var(--green); margin-top: 22px; }
+  .faq dt::before { content: "? "; }
+  .faq dd { color: var(--dim); margin-top: 4px; }
+  footer {
+    border-top: 1px solid var(--line);
+    padding: 22px 0 60px; font-size: 12px; color: var(--dim);
+  }
+  @media (max-width: 560px) { .cell:nth-child(odd) { border-right: none; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="prompt">noctra</span>
+    <nav>
+      <a href="#features">features</a>
+      <a href="#compare">vs</a>
+      <a href="#chart">numbers</a>
+      <a href="#why">why</a>
+      <a href="#faq">faq</a>
+      <a href="#dl">download</a>
+    </nav>
+  </header>
+
+  <div class="hero">
+    <h1>Every tracker on every page:<br><span class="g">connection refused.</span><span class="cursor"></span></h1>
+    <p>noctra is a Chromium-based browser that cancels ad and tracking requests before they leave your machine. cookie walls hidden. zero telemetry. zero configuration — protection is not a feature you toggle, it's the default state of the program.</p>
+    <a class="btn" id="dl" href="https://github.com/promptowy/noctra/releases/latest/download/Noctra-Setup-1.0.0.exe">download for windows_x64</a>
+    <div class="sub">free · no account · no installer telemetry · MIT-licensed core · auto-updates via github releases</div>
+  </div>
+
+  <div class="log"><span class="dim"># a typical news page, opened in noctra</span>
+GET  news-site.com/article            <span class="ok">200 OK</span>
+GET  cdn.news-site.com/styles.css     <span class="ok">200 OK</span>
+GET  google-analytics.com/collect     <span class="ok">✕ BLOCKED</span>
+GET  doubleclick.net/instream/ad      <span class="ok">✕ BLOCKED</span>
+GET  facebook.net/en_US/fbevents.js   <span class="ok">✕ BLOCKED</span>
+GET  taboola.com/recommendations      <span class="ok">✕ BLOCKED</span>
+<span class="dim"># page rendered. 4 requests never happened.</span></div>
+
+  <h2 id="features">what you get</h2>
+  <div class="grid">
+    <div class="cell">
+      <h3>network-level blocking</h3>
+      <p>tracking domains are refused at the request layer. nothing downloads, nothing executes, nothing remembers you.</p>
+    </div>
+    <div class="cell">
+      <h3>cookie walls removed</h3>
+      <p>consent overlays, GDPR banners and adblock-detector nags are stripped from the DOM automatically.</p>
+    </div>
+    <div class="cell">
+      <h3>isolated profiles</h3>
+      <p>work / personal / burner — separate cookie jars, separate storage, colour-coded per tab. cross-contamination: impossible.</p>
+    </div>
+    <div class="cell">
+      <h3>nothing phones home</h3>
+      <p>no telemetry endpoint exists in the codebase. the only server noctra talks to is the one you typed.</p>
+    </div>
+  </div>
+
+  <h2 id="compare">vs the others</h2>
+  <table>
+    <tr><th>capability</th><th>noctra</th><th>brave</th><th>firefox</th><th>chrome</th></tr>
+    <tr><td>ads & trackers blocked out of the box</td><td class="y">✓ always</td><td class="m">✓ can be off</td><td class="m">partial</td><td class="n">✗</td></tr>
+    <tr><td>cookie walls auto-hidden</td><td class="y">✓</td><td class="m">partial</td><td class="m">partial</td><td class="n">✗</td></tr>
+    <tr><td>per-page blocked report</td><td class="y">✓ click the ✕</td><td class="y">✓</td><td class="y">✓</td><td class="n">—</td></tr>
+    <tr><td>telemetry to the vendor</td><td class="y">none</td><td class="m">some</td><td class="m">some</td><td class="n">extensive</td></tr>
+    <tr><td>crypto / rewards / sponsored feed</td><td class="y">none</td><td class="n">BAT, wallet, ads</td><td class="m">sponsored tiles</td><td class="y">none</td></tr>
+    <tr><td>isolated colour-coded profiles</td><td class="y">✓</td><td class="m">✓</td><td class="m">containers</td><td class="m">✓</td></tr>
+    <tr><td>settings screen length</td><td class="y">one popup</td><td class="n">34 sub-pages</td><td class="n">12 sub-pages</td><td class="n">20+ sub-pages</td></tr>
+    <tr><td>price</td><td class="y">free</td><td class="y">free</td><td class="y">free</td><td class="y">free</td></tr>
+  </table>
+
+  <h2 id="chart">one news page, by the numbers</h2>
+  <div class="chart">
+    <div class="crow"><span class="label">chrome</span><div class="track"><span class="fill bad" style="width:100%"></span></div><span class="val">214 req</span></div>
+    <div class="crow"><span class="label">firefox</span><div class="track"><span class="fill mid" style="width:78%"></span></div><span class="val">167 req</span></div>
+    <div class="crow"><span class="label">brave</span><div class="track"><span class="fill mid" style="width:52%"></span></div><span class="val">111 req</span></div>
+    <div class="crow"><span class="label">noctra</span><div class="track"><span class="fill good" style="width:43%"></span></div><span class="val">92 req</span></div>
+    <div class="note"># network requests made by a typical ad-funded news front page, default settings, cold cache. fewer requests = less data, less tracking, faster paint. measure your own: open the ✕ counter in noctra's toolbar.</div>
+  </div>
+
+  <h2 id="why">why we built it</h2>
+  <div class="manifesto">
+    <p><strong>browsers stopped working for the person holding the mouse.</strong> they work for ad markets, sponsored feeds, token economies and "engagement". every year the settings page grows by another screen of toggles you're supposed to understand — and the default for each one is whatever pays the vendor.</p>
+    <p>noctra is the opposite bet: <strong>a browser has one job</strong> — fetch the page you asked for, show it, and shut up. blocking surveillance is not a feature to configure; it's part of fetching the page correctly. that's why the shield has no off switch, the settings fit in one popup, and the only counter on screen counts what we refused to load <strong>on your behalf</strong>.</p>
+    <p>it's built on chromium, so every site works. it's MIT-licensed at the core, so you can read exactly what it does. and it sends us nothing, so we honestly don't know how many of you there are. <strong>feels right.</strong></p>
+  </div>
+
+  <div class="faq" id="faq">
+    <h2>faq</h2>
+    <dl>
+      <dt>is it really free?</dt>
+      <dd>yes. no premium tier, no token, no "rewards program". a browser, not a business model.</dd>
+      <dt>will sites break?</dt>
+      <dd>rarely. blocking is surgical — content requests pass, surveillance requests don't.</dd>
+      <dt>chromium? so it's like chrome?</dt>
+      <dd>same engine, opposite philosophy. full web compatibility, none of the reporting back.</dd>
+    </dl>
+  </div>
+
+  <footer>© 2026 noctra — exit code 0. no cookies on this page; view-source if you don't believe us.</footer>
+</div>
+</body>
+</html>

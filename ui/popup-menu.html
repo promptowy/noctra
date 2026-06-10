@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header>menu</header>
+  <main>
+    <button class="item" onclick="window.noctra.menuAction('new-tab')">+ new tab <span class="key">Ctrl+T</span></button>
+    <button class="item" onclick="window.noctra.openPopup('profiles', 99999)">◈ profiles</button>
+    <button class="item" onclick="window.noctra.menuAction('settings')">⚙ settings</button>
+    <div class="section"># about</div>
+    <div class="row"><span class="host">noctra</span><span class="count" id="ver">1.0</span></div>
+    <div class="row"><span class="host">chromium</span><span class="count" id="chromium">—</span></div>
+  </main>
+  <footer>no telemetry. this menu is all there is.</footer>
+<script>
+  (async () => {
+    const s = await window.noctra.getSettings();
+    document.getElementById('ver').textContent = s.version;
+    document.getElementById('chromium').textContent = s.chromium;
+  })();
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') window.noctra.closePopup(); });
+</script>
+</body>
+</html>

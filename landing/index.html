@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Noctra — The browser that blocks everything that watches you</title>
+<meta name="description" content="Noctra is a private browser with ads, trackers and cookie walls blocked by default. Separate profiles for work and life. No telemetry. Free forever.">
+<style>
+  :root {
+    --bg: #0b0b12;
+    --bg2: #14141f;
+    --bg3: #1c1c2c;
+    --text: #ecebf5;
+    --muted: #8d8ca6;
+    --accent: #8b5cf6;
+    --accent2: #22d3ee;
+    --green: #4ade80;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+  nav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 22px 0;
+  }
+  .logo { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 20px; }
+  .logo img { width: 32px; height: 32px; border-radius: 8px; }
+  .grad {
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  nav a { color: var(--muted); text-decoration: none; margin-left: 28px; font-size: 14px; }
+  nav a:hover { color: var(--text); }
+  .hero { text-align: center; padding: 90px 0 70px; position: relative; overflow: hidden; }
+  .hero::before {
+    content: ""; position: absolute; inset: -40% -20% auto;
+    height: 600px;
+    background: radial-gradient(ellipse at 30% 20%, rgba(139,92,246,.22), transparent 60%),
+                radial-gradient(ellipse at 70% 10%, rgba(34,211,238,.14), transparent 60%);
+    pointer-events: none;
+  }
+  h1 { font-size: clamp(38px, 6vw, 64px); line-height: 1.12; font-weight: 800; letter-spacing: -1px; position: relative; }
+  .hero p.sub { font-size: 19px; color: var(--muted); max-width: 620px; margin: 24px auto 0; position: relative; }
+  .cta-row { margin-top: 40px; display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; position: relative; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 9px;
+    padding: 15px 30px; border-radius: 14px;
+    font-size: 16px; font-weight: 600; text-decoration: none;
+    transition: transform .12s, box-shadow .12s;
+  }
+  .btn-primary {
+    background: linear-gradient(90deg, var(--accent), #6d3df0);
+    color: #fff; box-shadow: 0 8px 30px rgba(139,92,246,.35);
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 36px rgba(139,92,246,.45); }
+  .btn-ghost { border: 1px solid #2c2c44; color: var(--text); }
+  .btn-ghost:hover { border-color: var(--accent); }
+  .hero .note { margin-top: 16px; font-size: 13px; color: var(--muted); position: relative; }
+  .shieldbar {
+    margin: 60px auto 0; max-width: 760px;
+    background: var(--bg2); border: 1px solid #23233a; border-radius: 18px;
+    padding: 22px 30px; display: flex; justify-content: space-around; flex-wrap: wrap; gap: 18px;
+    position: relative;
+  }
+  .stat { text-align: center; }
+  .stat .n { font-size: 30px; font-weight: 800; }
+  .stat .l { font-size: 13px; color: var(--muted); }
+  section { padding: 80px 0; }
+  h2 { font-size: clamp(28px, 4vw, 40px); font-weight: 800; letter-spacing: -.5px; text-align: center; }
+  .section-sub { text-align: center; color: var(--muted); max-width: 560px; margin: 14px auto 50px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 22px; }
+  .card {
+    background: var(--bg2); border: 1px solid #23233a; border-radius: 18px;
+    padding: 30px;
+  }
+  .card .icon {
+    width: 46px; height: 46px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; margin-bottom: 18px;
+    background: linear-gradient(135deg, rgba(139,92,246,.2), rgba(34,211,238,.12));
+  }
+  .card h3 { font-size: 19px; margin-bottom: 10px; }
+  .card p { color: var(--muted); font-size: 14.5px; }
+  .vs { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; background: var(--bg2); border-radius: 18px; overflow: hidden; }
+  th, td { padding: 16px 20px; text-align: left; font-size: 14.5px; border-bottom: 1px solid #23233a; }
+  th { background: var(--bg3); font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); }
+  td:not(:first-child), th:not(:first-child) { text-align: center; }
+  .yes { color: var(--green); font-weight: 700; }
+  .no { color: #f87171; }
+  .meh { color: var(--muted); }
+  .final { text-align: center; padding: 100px 0 110px; }
+  footer { border-top: 1px solid #1c1c2c; padding: 30px 0; color: var(--muted); font-size: 13px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+  footer a { color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <span class="logo"><img src="../assets/noctra-64.png" alt="Noctra logo"><span class="grad">Noctra</span></span>
+    <span>
+      <a href="#features">Features</a>
+      <a href="#compare">Compare</a>
+      <a href="#download">Download</a>
+    </span>
+  </nav>
+</div>
+
+<header class="hero">
+  <div class="wrap">
+    <h1>The web, after dark.<br><span class="grad">Nothing watches you here.</span></h1>
+    <p class="sub">Noctra blocks ads, trackers and cookie walls before they even load — automatically, on every site, with nothing to configure. Built on the same engine as Chrome. Free forever.</p>
+    <div class="cta-row">
+      <a class="btn btn-primary" id="download" href="#" onclick="alert('Noctra 1.0 for Windows — coming to this button very soon.');return false;">⬇ Download for Windows</a>
+      <a class="btn btn-ghost" href="#features">See what it blocks</a>
+    </div>
+    <p class="note">Windows 10/11 · 64-bit · No account. No telemetry. No catch.</p>
+    <div class="shieldbar">
+      <div class="stat"><div class="n grad">100%</div><div class="l">of known trackers blocked</div></div>
+      <div class="stat"><div class="n grad">0</div><div class="l">bytes of telemetry sent</div></div>
+      <div class="stat"><div class="n grad">∞</div><div class="l">profiles, fully isolated</div></div>
+    </div>
+  </div>
+</header>
+
+<section id="features">
+  <div class="wrap">
+    <h2>Private by default. <span class="grad">Not by settings.</span></h2>
+    <p class="section-sub">Other browsers make you dig through menus to get privacy. In Noctra, the shield is always up — it can't be turned off, because it shouldn't be.</p>
+    <div class="grid">
+      <div class="card">
+        <div class="icon">🛡️</div>
+        <h3>Ads & trackers — gone at the network level</h3>
+        <p>Tracking requests are cancelled before a single byte is downloaded. Pages load faster, your data plan lasts longer, and analytics companies learn nothing.</p>
+      </div>
+      <div class="card">
+        <div class="icon">🍪</div>
+        <h3>Cookie walls & adblock-nags, dissolved</h3>
+        <p>Consent popups, GDPR overlays and "please disable your adblocker" walls are hidden automatically. You read the page, not the lawyers.</p>
+      </div>
+      <div class="card">
+        <div class="icon">👥</div>
+        <h3>Profiles that truly don't touch</h3>
+        <p>Work, personal, side-project — each profile gets its own cookies, logins and storage, color-coded per tab. Sites in one profile can't see the others exist.</p>
+      </div>
+      <div class="card">
+        <div class="icon">🌒</div>
+        <h3>Dark, calm, fast</h3>
+        <p>A night-first interface with zero clutter. One toolbar, your tabs, and a live counter of everything Noctra just blocked for you.</p>
+      </div>
+      <div class="card">
+        <div class="icon">📡</div>
+        <h3>Tracking signals, sent for you</h3>
+        <p>Every request carries Do-Not-Track and Global Privacy Control headers — a legally meaningful opt-out in a growing number of jurisdictions.</p>
+      </div>
+      <div class="card">
+        <div class="icon">⚡</div>
+        <h3>Chromium under the hood</h3>
+        <p>Full compatibility with the modern web — same rendering engine as Chrome and Brave, minus the parts that phone home.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="compare">
+  <div class="wrap">
+    <h2>Noctra vs. <span class="grad">the usual suspects</span></h2>
+    <p class="section-sub">No reward tokens, no sponsored news feed, no crypto wallet you never asked for.</p>
+    <div class="vs">
+      <table>
+        <tr><th></th><th>Noctra</th><th>Brave</th><th>Chrome</th></tr>
+        <tr><td>Ads & trackers blocked by default</td><td class="yes">✓ always on</td><td class="meh">✓ (can be off)</td><td class="no">✗</td></tr>
+        <tr><td>Cookie walls hidden automatically</td><td class="yes">✓</td><td class="meh">partial</td><td class="no">✗</td></tr>
+        <tr><td>Telemetry sent to the vendor</td><td class="yes">none</td><td class="meh">some</td><td class="no">extensive</td></tr>
+        <tr><td>Crypto / ad-token ecosystem</td><td class="yes">none</td><td class="no">BAT, wallet</td><td class="yes">none</td></tr>
+        <tr><td>Isolated color-coded profiles</td><td class="yes">✓</td><td class="meh">✓</td><td class="meh">✓</td></tr>
+        <tr><td>Price</td><td class="yes">free forever</td><td class="yes">free</td><td class="yes">free</td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="final">
+  <div class="wrap">
+    <h2>Switch off the surveillance.<br><span class="grad">Switch on Noctra.</span></h2>
+    <div class="cta-row">
+      <a class="btn btn-primary" href="#" onclick="alert('Noctra 1.0 for Windows — coming to this button very soon.');return false;">⬇ Download Noctra — free</a>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+  <footer>
+    <span>© 2026 Noctra. Crafted by Promptowy.</span>
+    <span>No cookies were used in the making of this website. Really — check.</span>
+  </footer>
+</div>
+</body>
+</html>

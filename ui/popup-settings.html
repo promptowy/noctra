@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header>settings<small>everything noctra lets you change</small></header>
+  <main>
+    <div class="section"># search engine</div>
+    <label class="opt"><input type="radio" name="engine" value="duckduckgo"> duckduckgo</label>
+    <label class="opt"><input type="radio" name="engine" value="brave"> brave search</label>
+    <label class="opt"><input type="radio" name="engine" value="google"> google</label>
+
+    <div class="section"># homepage (new tabs)</div>
+    <div style="padding: 4px 16px 8px;">
+      <input type="text" id="homepage" placeholder="https://...">
+    </div>
+
+    <div class="section"># shield</div>
+    <div class="row"><span class="host">block ads & trackers</span><span class="count">always on</span></div>
+    <div class="row"><span class="host">hide cookie walls</span><span class="count">always on</span></div>
+    <div class="row"><span class="host">DNT + GPC headers</span><span class="count">always on</span></div>
+    <div class="row"><span class="host">telemetry</span><span class="count">does not exist</span></div>
+
+    <div class="section"># current profile</div>
+    <div style="padding: 8px 16px;">
+      <button class="btn danger" id="clear">wipe cookies & cache for this profile</button>
+    </div>
+
+    <div class="section"># about</div>
+    <div class="row"><span class="host">noctra</span><span class="count" id="ver">—</span></div>
+    <div class="row"><span class="host">chromium engine</span><span class="count" id="chromium">—</span></div>
+  </main>
+  <footer>settings save instantly. there is no cloud — they stay on this machine.</footer>
+<script>
+  (async () => {
+    const s = await window.noctra.getSettings();
+    document.querySelector(`input[name="engine"][value="${s.searchEngine}"]`)?.click();
+    document.getElementById('homepage').value = s.homepage;
+    document.getElementById('ver').textContent = s.version;
+    document.getElementById('chromium').textContent = s.chromium;
+  })();
+  document.querySelectorAll('input[name="engine"]').forEach(r => {
+    r.onchange = () => window.noctra.setSettings({ searchEngine: r.value });
+  });
+  const hp = document.getElementById('homepage');
+  hp.onchange = () => window.noctra.setSettings({ homepage: hp.value.trim() });
+  document.getElementById('clear').onclick = () => {
+    if (confirm('Wipe all cookies, logins and cache for the current profile?')) window.noctra.clearProfileData();
+  };
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') window.noctra.closePopup(); });
+</script>
+</body>
+</html>

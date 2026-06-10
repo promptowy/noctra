@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Noctra — the quiet browser</title>
+<meta name="description" content="Noctra is a calm, private browser. Ads and trackers are blocked by default, cookie pop-ups never appear, and your profiles stay separate.">
+<style>
+  :root {
+    --paper: #f7f3ec;
+    --ink: #20242c;
+    --soft: #6e6a61;
+    --navy: #23355c;
+    --card: #efe9de;
+    --line: #e0d8c9;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    line-height: 1.7;
+    font-size: 17px;
+  }
+  .wrap { max-width: 660px; margin: 0 auto; padding: 0 26px; }
+  header { padding: 34px 0; display: flex; justify-content: space-between; align-items: center; }
+  .mark { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 17px; }
+  .moon { width: 22px; height: 22px; border-radius: 50%; background: var(--navy); position: relative; overflow: hidden; }
+  .moon::after { content: ""; position: absolute; left: 7px; top: -3px; width: 20px; height: 20px; border-radius: 50%; background: var(--paper); }
+  header a { color: var(--soft); text-decoration: none; font-size: 14px; }
+  header a:hover { color: var(--navy); }
+  .hero { padding: 72px 0 56px; text-align: center; }
+  h1 {
+    font-size: clamp(36px, 6vw, 56px);
+    line-height: 1.12; font-weight: 800; letter-spacing: -1.2px;
+  }
+  h1 .quiet { color: var(--navy); }
+  .hero .lede { margin: 26px auto 0; max-width: 480px; font-size: 19px; color: var(--soft); }
+  .btn {
+    display: inline-block; margin-top: 38px;
+    background: var(--navy); color: var(--paper);
+    padding: 16px 38px; border-radius: 999px;
+    text-decoration: none; font-weight: 600; font-size: 16px;
+    box-shadow: 0 2px 0 rgba(32,36,44,.25);
+  }
+  .btn:hover { transform: translateY(-1px); }
+  .tiny { margin-top: 14px; font-size: 13px; color: var(--soft); }
+  .story { padding: 56px 0; border-top: 1px solid var(--line); }
+  .story h2 { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 16px; }
+  .story p { color: var(--soft); }
+  .story p strong { color: var(--ink); }
+  .cards { display: flex; flex-direction: column; gap: 14px; margin-top: 30px; }
+  .card {
+    background: var(--card); border-radius: 16px;
+    padding: 22px 26px; display: flex; gap: 18px; align-items: flex-start;
+  }
+  .card .n {
+    flex: none; width: 34px; height: 34px; border-radius: 50%;
+    background: var(--navy); color: var(--paper);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 15px; margin-top: 2px;
+  }
+  .card h3 { font-size: 17px; font-weight: 700; }
+  .card p { font-size: 15px; color: var(--soft); margin-top: 3px; }
+  .promise {
+    margin: 30px 0 70px; padding: 34px 38px;
+    border: 2px solid var(--navy); border-radius: 16px;
+  }
+  .promise h2 { font-size: 22px; font-weight: 800; margin-bottom: 12px; }
+  .promise ul { list-style: none; }
+  .promise li { padding: 7px 0 7px 30px; position: relative; color: var(--soft); }
+  .promise li::before { content: "—"; position: absolute; left: 0; color: var(--navy); font-weight: 700; }
+  .final { text-align: center; padding: 30px 0 80px; }
+  .final h2 { font-size: 30px; font-weight: 800; letter-spacing: -0.7px; }
+  footer {
+    border-top: 1px solid var(--line);
+    padding: 24px 0 56px; font-size: 13px; color: var(--soft);
+    display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <span class="mark"><span class="moon"></span>Noctra</span>
+      <a href="#download">Download</a>
+    </header>
+
+    <div class="hero">
+      <h1>The internet is loud.<br><span class="quiet">Your browser shouldn't be.</span></h1>
+      <p class="lede">Noctra opens the page you asked for — and quietly refuses everything you didn't: ads, trackers, cookie pop-ups, nag screens.</p>
+      <a class="btn" id="download" href="#" onclick="alert('Noctra 1.0 for Windows — link coming soon.');return false;">Get Noctra for Windows</a>
+      <div class="tiny">Free · takes a minute · changes nothing else on your PC</div>
+    </div>
+
+    <div class="story">
+      <h2>You've seen the web like this for so long, it feels normal.</h2>
+      <p>A page loads. A banner asks about cookies. A video follows you down the screen. Somewhere underneath, <strong>a dozen companies note what you read tonight.</strong></p>
+      <p style="margin-top:14px;">Noctra was built on a simple idea: none of that is the web. It's residue on top of it. So we wipe it off — automatically, on every page, with nothing to configure.</p>
+
+      <div class="cards">
+        <div class="card">
+          <span class="n">1</span>
+          <div>
+            <h3>Trackers never connect</h3>
+            <p>Requests to surveillance servers are cancelled inside the browser. Pages feel lighter because they are.</p>
+          </div>
+        </div>
+        <div class="card">
+          <span class="n">2</span>
+          <div>
+            <h3>Pop-ups never appear</h3>
+            <p>Cookie banners and "turn off your adblocker" walls are gone before you see them.</p>
+          </div>
+        </div>
+        <div class="card">
+          <span class="n">3</span>
+          <div>
+            <h3>Your lives stay separate</h3>
+            <p>Work, home, hobbies — each profile keeps its own logins and history, marked by a coloured dot on every tab.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="promise">
+      <h2>Three things Noctra will never do</h2>
+      <ul>
+        <li>Send telemetry. There is no "usage data" switch because there is no usage data.</li>
+        <li>Ask you to create an account, join a rewards program, or hold a token.</li>
+        <li>Make privacy a setting. The shield has no off switch.</li>
+      </ul>
+    </div>
+
+    <div class="final">
+      <h2>Try a quieter web tonight.</h2>
+      <a class="btn" href="#" onclick="alert('Noctra 1.0 for Windows — link coming soon.');return false;">Download Noctra — free</a>
+    </div>
+
+    <footer>
+      <span>© 2026 Noctra · made by Promptowy</span>
+      <span>This page has no analytics. We genuinely don't know you're here.</span>
+    </footer>
+  </div>
+</body>
+</html>

@@ -1,0 +1,56 @@
+{
+  "name": "noctra",
+  "version": "1.0.0",
+  "description": "Noctra — the private browser that blocks ads, trackers and cookie walls by default.",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win"
+  },
+  "author": "Promptowy",
+  "license": "MIT",
+  "type": "commonjs",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/promptowy/noctra.git"
+  },
+  "build": {
+    "appId": "com.promptowy.noctra",
+    "productName": "Noctra",
+    "artifactName": "Noctra-Setup-${version}.${ext}",
+    "files": [
+      "main.js",
+      "preload.js",
+      "blocklist.js",
+      "cosmetic.js",
+      "ui/**/*",
+      "assets/**/*",
+      "package.json"
+    ],
+    "directories": {
+      "output": "release"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "assets/noctra.ico"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "deleteAppDataOnUninstall": false,
+      "shortcutName": "Noctra"
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "promptowy",
+      "repo": "noctra"
+    }
+  },
+  "devDependencies": {
+    "electron": "^42.4.0",
+    "electron-builder": "^26.15.2"
+  },
+  "dependencies": {
+    "electron-updater": "^6.8.9"
+  }
+}

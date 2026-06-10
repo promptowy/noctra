@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header>shield<small id="site">—</small></header>
+  <main id="list"></main>
+  <footer><span id="tabTotal">0</span> blocked on this page · <span id="sessionTotal">0</span> this session · always on</footer>
+<script>
+  (async () => {
+    const data = await window.noctra.getShieldData();
+    document.getElementById('site').textContent = data.site || 'no page';
+    document.getElementById('tabTotal').textContent = data.total;
+    document.getElementById('sessionTotal').textContent = data.sessionTotal;
+    const list = document.getElementById('list');
+    if (!data.hosts.length) {
+      list.innerHTML = '<div class="empty"># nothing to block here.<br>clean page — they do exist.</div>';
+      return;
+    }
+    const max = data.hosts[0].count;
+    const frag = document.createDocumentFragment();
+    const sec = document.createElement('div');
+    sec.className = 'section';
+    sec.textContent = '# trackers & ads refused:';
+    frag.appendChild(sec);
+    for (const h of data.hosts) {
+      const row = document.createElement('div');
+      row.className = 'row';
+      const host = document.createElement('span');
+      host.className = 'host';
+      host.textContent = '✕ ' + h.host;
+      const count = document.createElement('span');
+      count.className = 'count';
+      count.textContent = h.count;
+      row.append(host, count);
+      frag.appendChild(row);
+      const bar = document.createElement('div');
+      bar.className = 'bar';
+      const fill = document.createElement('i');
+      fill.style.width = Math.max(4, Math.round(h.count / max * 100)) + '%';
+      bar.appendChild(fill);
+      frag.appendChild(bar);
+    }
+    list.appendChild(frag);
+  })();
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') window.noctra.closePopup(); });
+</script>
+</body>
+</html>

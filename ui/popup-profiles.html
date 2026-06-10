@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header>profiles<small>separate cookies, logins & storage</small></header>
+  <main id="list"></main>
+  <footer>
+    <div style="display:flex; gap:8px;">
+      <input type="text" id="newname" placeholder="new profile name" maxlength="24">
+      <button class="btn" id="add">add</button>
+    </div>
+  </footer>
+<script>
+  (async () => {
+    const { profiles, activeProfile } = await window.noctra.getProfiles();
+    const list = document.getElementById('list');
+    for (const p of profiles) {
+      const b = document.createElement('button');
+      b.className = 'item';
+      const dot = document.createElement('span');
+      dot.className = 'pdot';
+      dot.style.background = p.color;
+      b.appendChild(dot);
+      b.appendChild(document.createTextNode(p.name));
+      if (p.name === activeProfile) {
+        const k = document.createElement('span');
+        k.className = 'key';
+        k.textContent = 'active';
+        b.appendChild(k);
+      }
+      b.onclick = () => window.noctra.switchProfile(p.name);
+      list.appendChild(b);
+    }
+  })();
+  const add = () => {
+    const v = document.getElementById('newname').value.trim();
+    if (v) window.noctra.addProfile(v);
+  };
+  document.getElementById('add').onclick = add;
+  document.getElementById('newname').onkeydown = (e) => { if (e.key === 'Enter') add(); };
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') window.noctra.closePopup(); });
+</script>
+</body>
+</html>

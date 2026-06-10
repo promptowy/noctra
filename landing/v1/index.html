@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Noctra — a browser that minds its own business</title>
+<meta name="description" content="Noctra blocks ads, trackers and cookie walls by default. No telemetry, no accounts, no settings to dig through.">
+<style>
+  :root {
+    --ink: #111111;
+    --paper: #ffffff;
+    --grey: #6b6b6b;
+    --line: #e5e5e5;
+    --red: #d92121;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: Georgia, "Times New Roman", serif;
+    background: var(--paper);
+    color: var(--ink);
+    line-height: 1.65;
+    font-size: 18px;
+  }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 0 28px; }
+  header { padding: 56px 0 0; }
+  .masthead {
+    display: flex; justify-content: space-between; align-items: baseline;
+    border-bottom: 3px solid var(--ink); padding-bottom: 18px;
+  }
+  .masthead .name { font-size: 22px; font-weight: 700; letter-spacing: -0.3px; }
+  .masthead nav a {
+    font-family: system-ui, sans-serif; font-size: 13px;
+    color: var(--grey); text-decoration: none; margin-left: 22px;
+  }
+  .masthead nav a:hover { color: var(--ink); }
+  .hero { padding: 88px 0 64px; }
+  h1 {
+    font-size: clamp(40px, 7vw, 72px);
+    line-height: 1.05; font-weight: 400; letter-spacing: -1.5px;
+  }
+  h1 em { font-style: italic; }
+  .hero .lede { margin-top: 30px; font-size: 21px; color: var(--grey); max-width: 560px; }
+  .cta { margin-top: 44px; display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+  .btn {
+    font-family: system-ui, sans-serif;
+    display: inline-block; background: var(--ink); color: var(--paper);
+    padding: 16px 34px; text-decoration: none; font-size: 15px; font-weight: 600;
+  }
+  .btn:hover { background: var(--red); }
+  .cta small { font-family: system-ui, sans-serif; font-size: 13px; color: var(--grey); }
+  .rule { border: none; border-top: 1px solid var(--line); }
+  section { padding: 64px 0; }
+  .kicker {
+    font-family: system-ui, sans-serif; font-size: 12px; font-weight: 700;
+    letter-spacing: 2.5px; text-transform: uppercase; color: var(--red);
+    margin-bottom: 18px;
+  }
+  h2 { font-size: 32px; font-weight: 400; letter-spacing: -0.5px; margin-bottom: 18px; }
+  p + p { margin-top: 16px; }
+  .muted { color: var(--grey); }
+  ol.points { list-style: none; counter-reset: n; margin-top: 36px; }
+  ol.points li {
+    counter-increment: n;
+    border-top: 1px solid var(--line);
+    padding: 26px 0 26px 64px; position: relative;
+  }
+  ol.points li::before {
+    content: counter(n, decimal-leading-zero);
+    position: absolute; left: 0; top: 28px;
+    font-family: system-ui, sans-serif; font-size: 13px; color: var(--red); font-weight: 700;
+  }
+  ol.points h3 { font-size: 21px; font-weight: 700; margin-bottom: 6px; }
+  ol.points p { font-size: 16.5px; color: var(--grey); }
+  .quote {
+    padding: 56px 0; text-align: center;
+  }
+  .quote blockquote { font-size: 28px; font-style: italic; line-height: 1.4; }
+  .quote cite { display: block; margin-top: 14px; font-family: system-ui, sans-serif; font-style: normal; font-size: 13px; color: var(--grey); }
+  footer {
+    border-top: 3px solid var(--ink);
+    padding: 26px 0 64px; margin-top: 40px;
+    font-family: system-ui, sans-serif; font-size: 13px; color: var(--grey);
+    display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="masthead">
+      <span class="name">Noctra</span>
+      <nav>
+        <a href="#why">Why</a>
+        <a href="#how">How it works</a>
+        <a href="#get">Download</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="hero">
+    <h1>A browser that <em>minds its own business.</em></h1>
+    <p class="lede">Noctra shows you the web and nothing else. Ads, trackers and cookie pop-ups are blocked before they load — there is no setting for it, because off was never an option.</p>
+    <div class="cta" id="get">
+      <a class="btn" href="#" onclick="alert('Noctra 1.0 for Windows — link coming soon.');return false;">Download for Windows</a>
+      <small>Free · 64-bit · no account, no telemetry</small>
+    </div>
+  </div>
+
+  <hr class="rule">
+
+  <section id="why">
+    <div class="kicker">Why Noctra</div>
+    <h2>The modern web watches you read. We think that's absurd.</h2>
+    <p class="muted">An average news page makes dozens of requests to companies whose only job is to remember you were there. Browsers treat this as normal. Noctra treats it as noise — and cancels it at the network level, before a single byte arrives.</p>
+  </section>
+
+  <section id="how" style="padding-top: 0;">
+    <div class="kicker">How it works</div>
+    <ol class="points">
+      <li>
+        <h3>Trackers blocked, not hidden</h3>
+        <p>Requests to ad and analytics servers are cancelled outright. Pages load faster because the heaviest parts never download.</p>
+      </li>
+      <li>
+        <h3>Cookie walls dissolved</h3>
+        <p>Consent overlays and "disable your adblocker" nags are removed automatically. You read the article, not the legal department.</p>
+      </li>
+      <li>
+        <h3>Profiles that never touch</h3>
+        <p>Work and private life get separate cookies, logins and storage. A colour-coded dot on every tab tells you which world you're in.</p>
+      </li>
+      <li>
+        <h3>Nothing phones home</h3>
+        <p>Noctra has no telemetry, no accounts, no news feed, no token economy. It is a browser. That used to be normal too.</p>
+      </li>
+    </ol>
+  </section>
+
+  <div class="quote">
+    <blockquote>"The quietest thing on my computer."</blockquote>
+    <cite>— an early user, asked what changed</cite>
+  </div>
+
+  <footer>
+    <span>© 2026 Noctra</span>
+    <span>Built on Chromium. Unbuilt from everything else.</span>
+  </footer>
+</div>
+</body>
+</html>
