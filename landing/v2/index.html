@@ -66,6 +66,48 @@
   }
   .log .ok { color: var(--green); }
   .log .dim { color: var(--dim); }
+  /* ---- product mockups ---- */
+  .mock-grid { display: grid; grid-template-columns: 1.6fr 1fr; gap: 16px; margin: 26px 0 10px; align-items: start; }
+  .mock { border: 1px solid var(--line); background: #0a0d0a; font-size: 11px; overflow: hidden; }
+  .mock .titlebar { display: flex; align-items: center; gap: 6px; padding: 6px 10px; border-bottom: 1px solid var(--line); color: var(--dim); }
+  .mock .titlebar .moon { color: var(--green); }
+  .mock .titlebar .winbtn { margin-left: auto; letter-spacing: 4px; }
+  .mock .tabs { display: flex; gap: 2px; padding: 6px 8px 0; border-bottom: 1px solid var(--line); }
+  .mock .tab { display: flex; align-items: center; gap: 6px; padding: 5px 10px; color: var(--dim); border: 1px solid transparent; border-bottom: none; }
+  .mock .tab.on { background: #111511; border-color: var(--line); color: var(--fg); }
+  .mock .dot { width: 6px; height: 6px; }
+  .mock .toolrow { display: flex; align-items: center; gap: 6px; padding: 8px; }
+  .mock .logo { color: var(--green); font-weight: 700; }
+  .mock .nav { color: var(--dim); }
+  .mock .urlbar { flex: 1; min-width: 0; background: #111511; border: 1px solid var(--line); padding: 5px 9px; color: var(--fg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .mock .chip { border: 1px solid var(--line); background: #111511; padding: 5px 8px; white-space: nowrap; }
+  .mock .chip.shield { color: var(--green); font-weight: 700; border-color: rgba(52,210,75,.4); }
+  .mock .page { position: relative; height: 240px; background: #0e110e; }
+  .mock .skel { position: absolute; background: #161b16; }
+  .mock .panel {
+    position: absolute; top: 8px; right: 8px; width: 215px;
+    background: var(--bg); border: 1px solid var(--green);
+    box-shadow: 0 14px 30px rgba(0,0,0,.6);
+  }
+  .mock .panel .ph { padding: 8px 10px; border-bottom: 1px solid var(--line); color: var(--green); font-weight: 700; }
+  .mock .panel .ph small { display: block; color: var(--dim); font-weight: 400; }
+  .mock .prow { display: flex; justify-content: space-between; padding: 4px 10px 0; }
+  .mock .prow .h { color: var(--fg); }
+  .mock .prow .c { color: var(--green); font-weight: 700; }
+  .mock .pbar { height: 3px; background: var(--line); margin: 2px 10px 4px; position: relative; }
+  .mock .pbar i { position: absolute; inset: 0 auto 0 0; background: var(--green); }
+  .mock .pfoot { padding: 7px 10px; border-top: 1px solid var(--line); color: var(--dim); margin-top: 5px; }
+  .mock .sec { padding: 7px 10px 2px; color: var(--dim); }
+  .mock .pitem { display: flex; align-items: center; gap: 8px; padding: 6px 10px; color: var(--fg); }
+  .mock .pitem .key { margin-left: auto; color: var(--dim); font-size: 10px; }
+  .mock-cap { color: var(--dim); font-size: 11.5px; margin-top: 8px; }
+  .mock .tabs { overflow: hidden; }
+  .mock .tab { white-space: nowrap; flex: 0 1 auto; overflow: hidden; }
+  @media (max-width: 700px) {
+    .mock-grid { grid-template-columns: 1fr; }
+    .mock .nav, .mock .chip.profile-chip { display: none; }
+    .mock .panel { width: 180px; }
+  }
   h2 { font-size: 19px; font-weight: 400; margin-top: 64px; }
   h2::before { content: "## "; color: var(--dim); }
   .lead { color: var(--dim); font-size: 13px; margin-top: 8px; }
@@ -139,6 +181,7 @@
   <header>
     <span class="prompt">noctra</span>
     <nav>
+      <a href="#look">look</a>
       <a href="#compare">vs others</a>
       <a href="#numbers">numbers</a>
       <a href="#features">features</a>
@@ -166,6 +209,69 @@ GET  doubleclick.net/instream/ad      <span class="ok">✕ BLOCKED</span>
 GET  facebook.net/en_US/fbevents.js   <span class="ok">✕ BLOCKED</span>
 GET  taboola.com/recommendations      <span class="ok">✕ BLOCKED</span>
 <span class="dim"># page rendered. 4 requests never happened.</span></div></div>
+
+  <h2 id="look">what it looks like</h2>
+  <p class="lead"># the whole interface. there is no part two.</p>
+  <div class="mock-grid">
+    <div>
+      <div class="mock">
+        <div class="titlebar"><span class="moon">☾</span> noctra<span class="winbtn">– ▢ ✕</span></div>
+        <div class="tabs">
+          <span class="tab on"><span class="dot" style="background:#34d24b"></span>Onet – Jesteś na bieżąco <span style="opacity:.5">x</span></span>
+          <span class="tab"><span class="dot" style="background:#22d3ee"></span>GitHub <span style="opacity:.5">x</span></span>
+          <span class="tab" style="color:var(--green)">+</span>
+        </div>
+        <div class="toolrow">
+          <span class="logo">$ noctra</span>
+          <span class="nav">&lt; &gt; ⟳</span>
+          <span class="urlbar">🔒 https://www.onet.pl/</span>
+          <span class="chip shield">✕ 23</span>
+          <span class="chip profile-chip"><span style="color:#34d24b">■</span> Work ▾</span>
+          <span class="chip">≡</span>
+        </div>
+        <div class="page">
+          <span class="skel" style="top:18px; left:12px; width:42%; height:14px;"></span>
+          <span class="skel" style="top:44px; left:12px; width:55%; height:8px;"></span>
+          <span class="skel" style="top:60px; left:12px; width:48%; height:8px;"></span>
+          <span class="skel" style="top:88px; left:12px; width:30%; height:60px;"></span>
+          <span class="skel" style="top:88px; left:calc(30% + 24px); width:24%; height:60px;"></span>
+          <span class="skel" style="top:168px; left:12px; width:58%; height:8px;"></span>
+          <span class="skel" style="top:184px; left:12px; width:50%; height:8px;"></span>
+          <span class="skel" style="top:200px; left:12px; width:54%; height:8px;"></span>
+          <div class="panel">
+            <div class="ph">$ shield<small>www.onet.pl</small></div>
+            <div class="sec"># trackers &amp; ads refused:</div>
+            <div class="prow"><span class="h">✕ onet.hit.gemius.pl</span><span class="c">9</span></div>
+            <div class="pbar"><i style="width:100%"></i></div>
+            <div class="prow"><span class="h">✕ doubleclick.net</span><span class="c">7</span></div>
+            <div class="pbar"><i style="width:78%"></i></div>
+            <div class="prow"><span class="h">✕ googletagmanager.com</span><span class="c">4</span></div>
+            <div class="pbar"><i style="width:44%"></i></div>
+            <div class="prow"><span class="h">✕ taboola.com</span><span class="c">3</span></div>
+            <div class="pbar"><i style="width:33%"></i></div>
+            <div class="pfoot">23 blocked on this page · 312 this session</div>
+          </div>
+        </div>
+      </div>
+      <div class="mock-cap"># click the ✕ counter — every refused tracker, named and counted. per-site off switch at the bottom for stubborn pages.</div>
+    </div>
+    <div>
+      <div class="mock">
+        <div class="titlebar"><span class="moon">☾</span> profiles</div>
+        <div class="ph" style="padding:8px 10px; border-bottom:1px solid var(--line); color:var(--green); font-weight:700;">$ profiles<small style="display:block;color:var(--dim);font-weight:400;">separate cookies, logins &amp; storage — grouped</small></div>
+        <div class="sec"># work</div>
+        <div class="pitem"><span class="dot" style="background:#34d24b"></span>Client A<span class="key">active</span></div>
+        <div class="pitem"><span class="dot" style="background:#22d3ee"></span>Client B</div>
+        <div class="sec"># socials</div>
+        <div class="pitem"><span class="dot" style="background:#f472b6"></span>Instagram</div>
+        <div class="pitem"><span class="dot" style="background:#fbbf24"></span>TikTok</div>
+        <div class="sec"># burner</div>
+        <div class="pitem"><span class="dot" style="background:#a78bfa"></span>Throwaway</div>
+        <div class="pfoot" style="border-top:1px solid var(--line); padding:8px 10px; color:var(--dim);">[ new profile name ] [ category ] <span style="color:var(--green); border:1px solid var(--green); padding:1px 6px;">add</span></div>
+      </div>
+      <div class="mock-cap"># profiles grouped into categories — work, socials, burners. each is a sealed jar: colour-coded per tab, zero cross-contamination.</div>
+    </div>
+  </div>
 
   <h2 id="compare">vs the others</h2>
   <p class="lead"># green = good for you. red = good for someone else.</p>

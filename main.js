@@ -77,9 +77,10 @@ function loadProfiles() {
     profiles = data.profiles;
     activeProfile = data.active;
   } catch {
-    profiles = [{ name: 'Default', color: PROFILE_COLORS[0] }];
+    profiles = [{ name: 'Default', color: PROFILE_COLORS[0], group: 'general' }];
     activeProfile = 'Default';
   }
+  for (const p of profiles) if (!p.group) p.group = 'general';
 }
 function saveProfiles() {
   fs.writeFileSync(profilesFile(), JSON.stringify({ profiles, active: activeProfile }));
@@ -271,7 +272,7 @@ function toUrl(input) {
 const POPUP_SIZES = {
   shield: { width: 360, height: 380 },
   menu: { width: 280, height: 330 },
-  profiles: { width: 300, height: 360 },
+  profiles: { width: 330, height: 460 },
   settings: { width: 470, height: 640 }
 };
 
@@ -429,11 +430,12 @@ app.whenReady().then(() => {
     saveProfiles();
     createTab(settings.homepage, name);
   });
-  ipcMain.on('add-profile', (_e, name) => {
+  ipcMain.on('add-profile', (_e, payload) => {
     closePopup();
-    name = String(name).trim().slice(0, 24);
+    const name = String(payload?.name ?? payload).trim().slice(0, 24);
+    const group = String(payload?.group || 'general').trim().toLowerCase().slice(0, 24) || 'general';
     if (!name || profiles.find(p => p.name === name)) return;
-    profiles.push({ name, color: PROFILE_COLORS[profiles.length % PROFILE_COLORS.length] });
+    profiles.push({ name, color: PROFILE_COLORS[profiles.length % PROFILE_COLORS.length], group });
     activeProfile = name;
     saveProfiles();
     createTab(settings.homepage, name);

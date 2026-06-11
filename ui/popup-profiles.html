@@ -5,42 +5,61 @@
 <link rel="stylesheet" href="popup.css">
 </head>
 <body>
-  <header>profiles<small>separate cookies, logins & storage</small></header>
+  <header>profiles<small>separate cookies, logins &amp; storage — grouped</small></header>
   <main id="list"></main>
   <footer>
-    <div style="display:flex; gap:8px;">
-      <input type="text" id="newname" placeholder="new profile name" maxlength="24">
-      <button class="btn" id="add">add</button>
+    <div style="display:flex; flex-direction:column; gap:6px;">
+      <div style="display:flex; gap:6px;">
+        <input type="text" id="newname" placeholder="new profile name" maxlength="24">
+        <input type="text" id="newgroup" placeholder="category" maxlength="24" list="groups" style="width:104px;">
+        <datalist id="groups"></datalist>
+      </div>
+      <button class="btn" id="add" style="width:100%;">add profile</button>
     </div>
   </footer>
 <script>
   (async () => {
     const { profiles, activeProfile } = await window.noctra.getProfiles();
     const list = document.getElementById('list');
-    for (const p of profiles) {
-      const b = document.createElement('button');
-      b.className = 'item';
-      const dot = document.createElement('span');
-      dot.className = 'pdot';
-      dot.style.background = p.color;
-      b.appendChild(dot);
-      b.appendChild(document.createTextNode(p.name));
-      if (p.name === activeProfile) {
-        const k = document.createElement('span');
-        k.className = 'key';
-        k.textContent = 'active';
-        b.appendChild(k);
+    const groups = [...new Set(profiles.map(p => p.group || 'general'))];
+    for (const g of groups) {
+      const sec = document.createElement('div');
+      sec.className = 'section';
+      sec.textContent = '# ' + g;
+      list.appendChild(sec);
+      for (const p of profiles.filter(p => (p.group || 'general') === g)) {
+        const b = document.createElement('button');
+        b.className = 'item';
+        const dot = document.createElement('span');
+        dot.className = 'pdot';
+        dot.style.background = p.color;
+        b.appendChild(dot);
+        b.appendChild(document.createTextNode(p.name));
+        if (p.name === activeProfile) {
+          const k = document.createElement('span');
+          k.className = 'key';
+          k.textContent = 'active';
+          b.appendChild(k);
+        }
+        b.onclick = () => window.noctra.switchProfile(p.name);
+        list.appendChild(b);
       }
-      b.onclick = () => window.noctra.switchProfile(p.name);
-      list.appendChild(b);
+    }
+    const dl = document.getElementById('groups');
+    for (const g of groups) {
+      const o = document.createElement('option');
+      o.value = g;
+      dl.appendChild(o);
     }
   })();
   const add = () => {
-    const v = document.getElementById('newname').value.trim();
-    if (v) window.noctra.addProfile(v);
+    const name = document.getElementById('newname').value.trim();
+    const group = document.getElementById('newgroup').value.trim() || 'general';
+    if (name) window.noctra.addProfile({ name, group });
   };
   document.getElementById('add').onclick = add;
   document.getElementById('newname').onkeydown = (e) => { if (e.key === 'Enter') add(); };
+  document.getElementById('newgroup').onkeydown = (e) => { if (e.key === 'Enter') add(); };
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') window.noctra.closePopup(); });
 </script>
 </body>
