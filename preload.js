@@ -29,6 +29,7 @@ contextBridge.exposeInMainWorld('noctra', {
   getSettings: () => ipcRenderer.invoke('get-settings'),
   setSettings: (patch) => ipcRenderer.send('set-settings', patch),
   clearProfileData: () => ipcRenderer.send('clear-profile-data'),
+  setDefaultBrowser: () => ipcRenderer.send('set-default-browser'),
 
   // menu
   menuAction: (action) => ipcRenderer.send('menu-action', action)

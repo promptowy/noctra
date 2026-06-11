@@ -7,6 +7,16 @@
 <body>
   <header>settings<small>everything noctra lets you change</small></header>
   <main>
+    <div class="section"># on startup</div>
+    <label class="opt"><input type="radio" name="startup" value="restore"> continue where you left off</label>
+    <label class="opt"><input type="radio" name="startup" value="home"> open the homepage</label>
+
+    <div class="section"># default browser</div>
+    <div style="padding: 6px 16px 10px;">
+      <button class="btn" id="mkdefault">make noctra the default browser</button>
+      <div style="color: var(--dim); font-size: 11px; margin-top: 6px;">opens windows settings — pick noctra under "web browser".</div>
+    </div>
+
     <div class="section"># search engine</div>
     <label class="opt"><input type="radio" name="engine" value="duckduckgo"> duckduckgo</label>
     <label class="opt"><input type="radio" name="engine" value="brave"> brave search</label>
@@ -38,6 +48,7 @@
   (async () => {
     const s = await window.noctra.getSettings();
     document.querySelector(`input[name="engine"][value="${s.searchEngine}"]`)?.click();
+    document.querySelector(`input[name="startup"][value="${s.startup || 'restore'}"]`)?.click();
     document.getElementById('homepage').value = s.homepage;
     document.getElementById('ver').textContent = s.version;
     document.getElementById('chromium').textContent = s.chromium;
@@ -45,6 +56,10 @@
   document.querySelectorAll('input[name="engine"]').forEach(r => {
     r.onchange = () => window.noctra.setSettings({ searchEngine: r.value });
   });
+  document.querySelectorAll('input[name="startup"]').forEach(r => {
+    r.onchange = () => window.noctra.setSettings({ startup: r.value });
+  });
+  document.getElementById('mkdefault').onclick = () => window.noctra.setDefaultBrowser();
   const hp = document.getElementById('homepage');
   hp.onchange = () => window.noctra.setSettings({ homepage: hp.value.trim() });
   document.getElementById('clear').onclick = () => {

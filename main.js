@@ -37,7 +37,31 @@ let sessionBlocked = 0;
 
 // ---------- Settings ----------
 const settingsFile = () => path.join(app.getPath('userData'), 'settings.json');
-let settings = { searchEngine: 'duckduckgo', homepage: 'https://duckduckgo.com', shieldOffSites: [] };
+let settings = { searchEngine: 'duckduckgo', homepage: 'https://duckduckgo.com', shieldOffSites: [], startup: 'restore' };
+
+// ---------- Session restore ("continue where you left off") ----------
+const sessionFile = () => path.join(app.getPath('userData'), 'session.json');
+let saveSessionTimer = null;
+function saveSession() {
+  clearTimeout(saveSessionTimer);
+  saveSessionTimer = setTimeout(() => {
+    try {
+      const data = [...tabs.values()]
+        .map(t => ({ url: t.view.webContents.getURL(), profile: t.profile }))
+        .filter(t => t.url && t.url.startsWith('http'));
+      fs.writeFileSync(sessionFile(), JSON.stringify(data));
+    } catch {}
+  }, 800);
+}
+function restoreSession() {
+  if (settings.startup !== 'restore') return false;
+  try {
+    const data = JSON.parse(fs.readFileSync(sessionFile(), 'utf8'));
+    if (!Array.isArray(data) || !data.length) return false;
+    for (const t of data) createTab(t.url, t.profile);
+    return true;
+  } catch { return false; }
+}
 function loadSettings() {
   try { settings = { ...settings, ...JSON.parse(fs.readFileSync(settingsFile(), 'utf8')) }; } catch {}
 }
@@ -150,6 +174,7 @@ function sendTabsState() {
     activeProfile,
     sessionBlocked
   });
+  saveSession();
 }
 
 function createTab(url = settings.homepage, profileName = activeProfile) {
@@ -247,7 +272,7 @@ const POPUP_SIZES = {
   shield: { width: 360, height: 380 },
   menu: { width: 280, height: 330 },
   profiles: { width: 300, height: 360 },
-  settings: { width: 460, height: 520 }
+  settings: { width: 470, height: 640 }
 };
 
 function closePopup() {
@@ -293,8 +318,28 @@ function setupAutoUpdate() {
   } catch {}
 }
 
+// ---------- External links & single instance (needed to be a default browser) ----------
+let pendingExternalUrl = null;
+function urlFromArgv(argv) {
+  return argv.find(a => /^https?:\/\//i.test(a)) || null;
+}
+if (!app.requestSingleInstanceLock()) {
+  app.quit();
+}
+app.on('second-instance', (_e, argv) => {
+  const url = urlFromArgv(argv);
+  if (win) {
+    if (win.isMinimized()) win.restore();
+    win.focus();
+    if (url) createTab(url);
+  } else if (url) {
+    pendingExternalUrl = url;
+  }
+});
+
 app.whenReady().then(() => {
   Menu.setApplicationMenu(null); // no File/Edit/View bar — browsers don't have one
+  pendingExternalUrl = urlFromArgv(process.argv.slice(1));
   loadBlocker();
   loadProfiles();
   loadSettings();
@@ -318,7 +363,10 @@ app.whenReady().then(() => {
   });
   win.on('closed', () => { win = null; });
 
-  win.webContents.once('did-finish-load', () => createTab());
+  win.webContents.once('did-finish-load', () => {
+    if (!restoreSession()) createTab();
+    if (pendingExternalUrl) { createTab(pendingExternalUrl); pendingExternalUrl = null; }
+  });
 
   // tabs & nav
   ipcMain.on('new-tab', () => createTab());
@@ -396,7 +444,14 @@ app.whenReady().then(() => {
   ipcMain.on('set-settings', (_e, patch) => {
     if (patch.searchEngine && SEARCH_ENGINES[patch.searchEngine]) settings.searchEngine = patch.searchEngine;
     if (typeof patch.homepage === 'string' && /^https?:\/\//.test(patch.homepage)) settings.homepage = patch.homepage;
+    if (patch.startup && ['restore', 'home'].includes(patch.startup)) settings.startup = patch.startup;
     saveSettings();
+  });
+  ipcMain.on('set-default-browser', () => {
+    app.setAsDefaultProtocolClient('http');
+    app.setAsDefaultProtocolClient('https');
+    // Windows requires the user to confirm in system settings
+    require('electron').shell.openExternal('ms-settings:defaultapps');
   });
   ipcMain.on('clear-profile-data', async () => {
     const ses = profileSession(activeProfile);
