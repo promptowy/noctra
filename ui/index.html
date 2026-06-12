@@ -89,6 +89,14 @@
     flex: 1; border: none; background: none; outline: none;
     color: var(--fg); font-size: 13px; font-family: inherit;
   }
+  #star {
+    border: none; background: none; color: var(--dim);
+    font-size: 16px; cursor: pointer; line-height: 1;
+    padding: 0; font-family: inherit;
+    transition: color 0.1s;
+  }
+  #star:hover { color: var(--fg); }
+  #star.on { color: var(--green); }
   .chip {
     display: flex; align-items: center; gap: 7px;
     background: var(--bg2); border: 1px solid var(--line);
@@ -101,6 +109,48 @@
   #shield .x { font-weight: 400; }
   #shield.off { color: var(--dim); border-style: dashed; }
   #profile .pdot { width: 8px; height: 8px; background: var(--green); }
+
+  /* Download tray */
+  #dltray {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: var(--bg2);
+    border-top: 1px solid var(--line);
+    display: flex; align-items: center; gap: 8px;
+    padding: 0 12px;
+    height: 32px;
+    font-size: 11px;
+    transform: translateY(100%);
+    transition: transform 0.15s ease;
+    z-index: 10;
+  }
+  #dltray.visible { transform: translateY(0); }
+  #dltray .dl-item {
+    display: flex; align-items: center; gap: 8px;
+    flex: 1; min-width: 0;
+    cursor: pointer;
+  }
+  #dltray .dl-item:hover .dl-name { color: var(--green); }
+  #dltray .dl-name { color: var(--fg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
+  #dltray .dl-progress {
+    width: 80px; height: 3px;
+    background: var(--line);
+    flex: none;
+  }
+  #dltray .dl-progress-bar { height: 100%; background: var(--green); transition: width 0.2s; }
+  #dltray .dl-status { color: var(--dim); flex: none; }
+  #dltray .dl-status.done { color: var(--green); }
+  #dltray .dl-status.fail { color: #fb7185; }
+  #dltray .dl-clear {
+    border: none; background: none; color: var(--dim);
+    cursor: pointer; font-family: inherit; font-size: 12px; padding: 0;
+  }
+  #dltray .dl-clear:hover { color: var(--fg); }
+  #dltray .dl-folder {
+    border: none; background: none; color: var(--dim);
+    cursor: pointer; font-family: inherit; font-size: 11px; padding: 0;
+    white-space: nowrap;
+  }
+  #dltray .dl-folder:hover { color: var(--green); }
 </style>
 </head>
 <body>
@@ -115,14 +165,17 @@
     <div id="urlbox">
       <span id="lock">&#9919;</span>
       <input id="url" placeholder="search or enter address" spellcheck="false">
+      <button id="star" title="bookmark this page (Ctrl+D)">☆</button>
     </div>
     <button class="chip" id="shield" title="blocked on this page — click for details"><span class="x">✕</span> <span id="blocked">0</span></button>
     <button class="chip" id="profile" title="profiles"><span class="pdot"></span><span id="profilename">Default</span> ▾</button>
     <button class="chip" id="menu" title="menu">≡</button>
   </div>
+  <div id="dltray"></div>
 <script>
   const $ = (id) => document.getElementById(id);
   let activeUrl = '';
+  let activeTitle = '';
   let urlFocused = false;
 
   window.noctra.onTabsUpdated((state) => {
@@ -148,11 +201,17 @@
       bar.insertBefore(el, plus);
       if (t.active) {
         activeUrl = t.url;
+        activeTitle = t.title || t.url;
         if (!urlFocused) $('url').value = t.url;
         $('back').disabled = !t.canGoBack;
         $('forward').disabled = !t.canGoForward;
         $('blocked').textContent = t.shieldOff ? 'off' : t.blocked;
         $('shield').classList.toggle('off', !!t.shieldOff);
+        // bookmark star
+        const star = $('star');
+        star.classList.toggle('on', !!t.isBookmarked);
+        star.textContent = t.isBookmarked ? '★' : '☆';
+        star.title = t.isBookmarked ? 'remove bookmark' : 'bookmark this page (Ctrl+D)';
       }
     }
     const ap = state.profiles.find(p => p.name === state.activeProfile) || state.profiles[0];
@@ -162,6 +221,66 @@
     }
   });
 
+  // Downloads tray
+  window.noctra.onDownloadsUpdated((list) => {
+    const tray = $('dltray');
+    if (!list.length) { tray.classList.remove('visible'); return; }
+    tray.classList.add('visible');
+    tray.innerHTML = '';
+
+    for (const dl of list.slice(-3)) { // show last 3
+      const pct = dl.total > 0 ? Math.round(dl.received / dl.total * 100) : 0;
+      const item = document.createElement('div');
+      item.className = 'dl-item';
+      item.title = dl.savePath || dl.filename;
+      if (dl.state === 'completed') item.onclick = () => window.noctra.showDownloadFile(dl.savePath);
+
+      const name = document.createElement('span');
+      name.className = 'dl-name';
+      name.textContent = dl.filename;
+
+      const status = document.createElement('span');
+      status.className = 'dl-status' + (dl.state === 'completed' ? ' done' : dl.state === 'failed' ? ' fail' : '');
+
+      if (dl.state === 'downloading') {
+        const bar = document.createElement('div');
+        bar.className = 'dl-progress';
+        const fill = document.createElement('div');
+        fill.className = 'dl-progress-bar';
+        fill.style.width = pct + '%';
+        bar.appendChild(fill);
+        status.textContent = pct + '%';
+        item.append(name, bar, status);
+      } else {
+        status.textContent = dl.state === 'completed' ? '✓ done' : '✕ failed';
+        item.append(name, status);
+      }
+
+      const clear = document.createElement('button');
+      clear.className = 'dl-clear';
+      clear.textContent = '×';
+      clear.title = 'dismiss';
+      clear.onclick = (e) => { e.stopPropagation(); window.noctra.clearDownload(dl.id); };
+
+      tray.append(item, clear);
+    }
+
+    const folder = document.createElement('button');
+    folder.className = 'dl-folder';
+    folder.textContent = '↗ downloads';
+    folder.onclick = () => window.noctra.openDownloadsFolder();
+    tray.appendChild(folder);
+  });
+
+  const toggleBookmark = () => {
+    const star = $('star');
+    if (star.classList.contains('on')) {
+      window.noctra.removeBookmark(activeUrl);
+    } else {
+      window.noctra.addBookmark(activeTitle, activeUrl);
+    }
+  };
+
   const anchor = (el) => el.getBoundingClientRect().left + el.getBoundingClientRect().width / 2;
   $('newtab').onclick = () => window.noctra.newTab();
   $('back').onclick = () => window.noctra.goBack();
@@ -170,6 +289,7 @@
   $('shield').onclick = () => window.noctra.openPopup('shield', anchor($('shield')));
   $('profile').onclick = () => window.noctra.openPopup('profiles', anchor($('profile')));
   $('menu').onclick = () => window.noctra.openPopup('menu', anchor($('menu')));
+  $('star').onclick = toggleBookmark;
 
   const url = $('url');
   url.onfocus = () => { urlFocused = true; url.select(); };
@@ -183,10 +303,15 @@
   };
 
   document.addEventListener('keydown', (e) => {
-    if (e.ctrlKey && e.key === 't') window.noctra.newTab();
+    if (e.ctrlKey && !e.shiftKey && e.key === 't') window.noctra.newTab();
+    if (e.ctrlKey && e.shiftKey && e.key === 'T') window.noctra.restoreTab();
     if (e.ctrlKey && e.key === 'l') url.focus();
+    if (e.ctrlKey && e.key === 'd') { e.preventDefault(); toggleBookmark(); }
+    if (e.ctrlKey && e.key === 'b') window.noctra.openPopup('bookmarks', anchor($('menu')));
   });
+
   window.noctra.onFocusUrl(() => url.focus());
+  window.noctra.onBookmarkShortcut(() => toggleBookmark());
 </script>
 </body>
 </html>

@@ -1,4 +1,4 @@
-const { app, BrowserWindow, WebContentsView, ipcMain, session, Menu } = require('electron');
+const { app, BrowserWindow, WebContentsView, ipcMain, session, Menu, shell } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const COSMETIC_CSS = require('./cosmetic');
@@ -39,7 +39,7 @@ let sessionBlocked = 0;
 const settingsFile = () => path.join(app.getPath('userData'), 'settings.json');
 let settings = { searchEngine: 'duckduckgo', homepage: 'https://duckduckgo.com', shieldOffSites: [], startup: 'restore' };
 
-// ---------- Session restore ("continue where you left off") ----------
+// ---------- Session restore ----------
 const sessionFile = () => path.join(app.getPath('userData'), 'session.json');
 let saveSessionTimer = null;
 function saveSession() {
@@ -91,15 +91,66 @@ function profileSession(name) {
     : session.fromPartition('persist:profile-' + name);
 }
 
-// ---------- Shield (always on) ----------
+// ---------- Bookmarks ----------
+const bookmarksFile = () => path.join(app.getPath('userData'), 'bookmarks.json');
+let bookmarks = [];
+function loadBookmarks() {
+  try { bookmarks = JSON.parse(fs.readFileSync(bookmarksFile(), 'utf8')); } catch { bookmarks = []; }
+}
+function saveBookmarks() { fs.writeFileSync(bookmarksFile(), JSON.stringify(bookmarks)); }
+function isBookmarked(url) { return bookmarks.some(b => b.url === url); }
+
+// ---------- Closed tabs (Ctrl+Shift+T) ----------
+const closedTabs = []; // max 20 entries: {url, profile}
+
+// ---------- Downloads ----------
+let nextDlId = 1;
+const activeDownloads = new Map(); // id -> {filename, total, received, state, savePath}
+const downloadedSessions = new WeakSet();
+
+function setupDownloads(ses) {
+  if (downloadedSessions.has(ses)) return;
+  downloadedSessions.add(ses);
+  ses.on('will-download', (_e, item) => {
+    const id = nextDlId++;
+    const filename = item.getFilename();
+    const savePath = path.join(app.getPath('downloads'), filename);
+    item.setSavePath(savePath);
+
+    activeDownloads.set(id, { id, filename, total: item.getTotalBytes(), received: 0, state: 'downloading', savePath });
+    sendDownloads();
+
+    item.on('updated', (_e, state) => {
+      const dl = activeDownloads.get(id);
+      if (!dl) return;
+      dl.received = item.getReceivedBytes();
+      dl.total = item.getTotalBytes();
+      dl.state = state === 'interrupted' ? 'failed' : 'downloading';
+      sendDownloads();
+    });
+    item.on('done', (_e, state) => {
+      const dl = activeDownloads.get(id);
+      if (!dl) return;
+      dl.state = state === 'completed' ? 'completed' : 'failed';
+      dl.received = item.getReceivedBytes();
+      sendDownloads();
+      // auto-clear completed after 8s
+      if (state === 'completed') setTimeout(() => { activeDownloads.delete(id); sendDownloads(); }, 8000);
+    });
+  });
+}
+
+function sendDownloads() {
+  if (!win || win.isDestroyed()) return;
+  win.webContents.send('downloads-updated', [...activeDownloads.values()]);
+}
+
+// ---------- Shield ----------
 function tabByWcId(wcId) {
   for (const t of tabs.values()) if (t.wcId === wcId) return t;
   return null;
 }
 
-// Full filter engine (EasyList + EasyPrivacy + EasyList Polish + cookie banners),
-// compiled at release time into assets/adblock-engine.bin. Network matching only —
-// no injected cosmetics from the engine, so pages can never be left hidden by it.
 let blocker = null;
 function loadBlocker() {
   blocker = FiltersEngine.deserialize(
@@ -156,24 +207,29 @@ function tabBounds() {
 
 function sendTabsState() {
   if (!win) return;
-  const state = [...tabs.entries()].map(([id, t]) => ({
-    id,
-    title: t.view.webContents.getTitle() || 'new tab',
-    url: t.view.webContents.getURL(),
-    profile: t.profile,
-    profileColor: (profiles.find(p => p.name === t.profile) || profiles[0]).color,
-    active: id === activeTabId,
-    blocked: t.blockedTotal,
-    shieldOff: shieldOffFor(normHost(t.view.webContents.getURL())),
-    canGoBack: t.view.webContents.navigationHistory.canGoBack(),
-    canGoForward: t.view.webContents.navigationHistory.canGoForward(),
-    loading: t.view.webContents.isLoading()
-  }));
+  const state = [...tabs.entries()].map(([id, t]) => {
+    const url = t.view.webContents.getURL();
+    return {
+      id,
+      title: t.view.webContents.getTitle() || 'new tab',
+      url,
+      profile: t.profile,
+      profileColor: (profiles.find(p => p.name === t.profile) || profiles[0]).color,
+      active: id === activeTabId,
+      blocked: t.blockedTotal,
+      shieldOff: shieldOffFor(normHost(url)),
+      canGoBack: t.view.webContents.navigationHistory.canGoBack(),
+      canGoForward: t.view.webContents.navigationHistory.canGoForward(),
+      loading: t.view.webContents.isLoading(),
+      isBookmarked: isBookmarked(url)
+    };
+  });
   win.webContents.send('tabs-updated', {
     tabs: state,
     profiles,
     activeProfile,
-    sessionBlocked
+    sessionBlocked,
+    hasClosedTab: closedTabs.length > 0
   });
   saveSession();
 }
@@ -182,6 +238,7 @@ function createTab(url = settings.homepage, profileName = activeProfile) {
   const id = nextTabId++;
   const ses = profileSession(profileName);
   setupShield(ses);
+  setupDownloads(ses);
   const view = new WebContentsView({
     webPreferences: { sandbox: true, contextIsolation: true, session: ses }
   });
@@ -198,8 +255,6 @@ function createTab(url = settings.homepage, profileName = activeProfile) {
   wc.on('did-finish-load', () => {
     if (shieldOffFor(normHost(wc.getURL()))) return;
     wc.insertCSS(COSMETIC_CSS).catch(() => {});
-    // Anti-hide watchdog: some sites keep <html>/<body> hidden until a consent
-    // manager or ad script (which we block) reports back. Unhide them.
     wc.executeJavaScript(`(() => {
       const unhide = () => {
         for (const el of [document.documentElement, document.body]) {
@@ -216,7 +271,6 @@ function createTab(url = settings.homepage, profileName = activeProfile) {
     createTab(url, profileName);
     return { action: 'deny' };
   });
-  // Browser shortcuts must work while the page has focus (no app menu anymore).
   wc.on('before-input-event', (e, input) => {
     if (input.type !== 'keyDown' || !input.control) return;
     const k = input.key.toLowerCase();
@@ -224,6 +278,8 @@ function createTab(url = settings.homepage, profileName = activeProfile) {
     if (k === 'w') { e.preventDefault(); closeTab(id); }
     if (k === 'r') { e.preventDefault(); wc.reload(); }
     if (k === 'l') { e.preventDefault(); win.focus(); win.webContents.focus(); win.webContents.send('focus-url'); }
+    if (k === 'd') { e.preventDefault(); win.webContents.send('focus-url'); setTimeout(() => win.webContents.send('bookmark-shortcut'), 50); }
+    if (input.shift && k === 't') { e.preventDefault(); restoreClosedTab(); }
   });
 
   wc.loadURL(url);
@@ -248,6 +304,12 @@ function switchTab(id) {
 function closeTab(id) {
   const t = tabs.get(id);
   if (!t) return;
+  // push to closed stack before removing
+  const url = t.view.webContents.getURL();
+  if (url && url.startsWith('http')) {
+    closedTabs.push({ url, profile: t.profile });
+    if (closedTabs.length > 20) closedTabs.shift();
+  }
   if (id === activeTabId) win.contentView.removeChildView(t.view);
   t.view.webContents.close();
   tabs.delete(id);
@@ -261,6 +323,12 @@ function closeTab(id) {
   }
 }
 
+function restoreClosedTab() {
+  if (!closedTabs.length) return;
+  const { url, profile } = closedTabs.pop();
+  createTab(url, profile);
+}
+
 function toUrl(input) {
   const text = input.trim();
   if (/^https?:\/\//i.test(text) || /^file:\/\//i.test(text)) return text;
@@ -268,12 +336,13 @@ function toUrl(input) {
   return (SEARCH_ENGINES[settings.searchEngine] || SEARCH_ENGINES.duckduckgo) + encodeURIComponent(text);
 }
 
-// ---------- Popups (shield / menu / settings bubbles, Brave-style) ----------
+// ---------- Popups ----------
 const POPUP_SIZES = {
   shield: { width: 360, height: 380 },
   menu: { width: 280, height: 330 },
   profiles: { width: 330, height: 460 },
-  settings: { width: 470, height: 640 }
+  settings: { width: 470, height: 640 },
+  bookmarks: { width: 380, height: 500 }
 };
 
 function closePopup() {
@@ -313,13 +382,12 @@ function setupAutoUpdate() {
     const { autoUpdater } = require('electron-updater');
     autoUpdater.autoDownload = true;
     autoUpdater.autoInstallOnAppQuit = true;
-    autoUpdater.on('error', () => {}); // offline / no release yet — never bother the user
+    autoUpdater.on('error', () => {});
     autoUpdater.checkForUpdatesAndNotify().catch(() => {});
     setInterval(() => autoUpdater.checkForUpdates().catch(() => {}), 4 * 60 * 60 * 1000);
   } catch {}
 }
 
-// ---------- External links & single instance (needed to be a default browser) ----------
 let pendingExternalUrl = null;
 function urlFromArgv(argv) {
   return argv.find(a => /^https?:\/\//i.test(a)) || null;
@@ -339,11 +407,12 @@ app.on('second-instance', (_e, argv) => {
 });
 
 app.whenReady().then(() => {
-  Menu.setApplicationMenu(null); // no File/Edit/View bar — browsers don't have one
+  Menu.setApplicationMenu(null);
   pendingExternalUrl = urlFromArgv(process.argv.slice(1));
   loadBlocker();
   loadProfiles();
   loadSettings();
+  loadBookmarks();
   setupAutoUpdate();
 
   win = new BrowserWindow({
@@ -369,6 +438,13 @@ app.whenReady().then(() => {
     if (pendingExternalUrl) { createTab(pendingExternalUrl); pendingExternalUrl = null; }
   });
 
+  // Ctrl+Shift+T at toolbar level
+  win.webContents.on('before-input-event', (_e, input) => {
+    if (input.type === 'keyDown' && input.control && input.shift && input.key.toLowerCase() === 't') {
+      restoreClosedTab();
+    }
+  });
+
   // tabs & nav
   ipcMain.on('new-tab', () => createTab());
   ipcMain.on('close-tab', (_e, id) => closeTab(id));
@@ -386,12 +462,13 @@ app.whenReady().then(() => {
     if (wc?.navigationHistory.canGoForward()) wc.navigationHistory.goForward();
   });
   ipcMain.on('reload', () => tabs.get(activeTabId)?.view.webContents.reload());
+  ipcMain.on('restore-tab', () => restoreClosedTab());
 
   // popups
   ipcMain.on('open-popup', (_e, { type, anchorX }) => openPopup(type, anchorX));
   ipcMain.on('close-popup', () => closePopup());
 
-  // shield details (Brave-style breakdown for the active tab)
+  // shield
   ipcMain.handle('get-shield-data', () => {
     const t = tabs.get(activeTabId);
     let url = '';
@@ -404,8 +481,6 @@ app.whenReady().then(() => {
       hosts: t ? [...t.blocked.entries()].map(([host, count]) => ({ host, count })).sort((a, b) => b.count - a.count) : []
     };
   });
-
-  // per-site shield toggle (Brave-style "shields down" for stubborn sites)
   ipcMain.on('toggle-shield-site', () => {
     closePopup();
     const t = tabs.get(activeTabId);
@@ -441,6 +516,31 @@ app.whenReady().then(() => {
     createTab(settings.homepage, name);
   });
 
+  // bookmarks
+  ipcMain.handle('get-bookmarks', () => bookmarks);
+  ipcMain.on('add-bookmark', (_e, { title, url }) => {
+    if (!url || isBookmarked(url)) return;
+    bookmarks.unshift({ title: title || url, url, date: Date.now() });
+    saveBookmarks();
+    sendTabsState();
+  });
+  ipcMain.on('remove-bookmark', (_e, url) => {
+    bookmarks = bookmarks.filter(b => b.url !== url);
+    saveBookmarks();
+    sendTabsState();
+  });
+  ipcMain.on('navigate-bookmark', (_e, url) => {
+    closePopup();
+    const t = tabs.get(activeTabId);
+    if (t) t.view.webContents.loadURL(url);
+    else createTab(url);
+  });
+
+  // downloads
+  ipcMain.on('open-downloads-folder', () => shell.openPath(app.getPath('downloads')));
+  ipcMain.on('clear-download', (_e, id) => { activeDownloads.delete(id); sendDownloads(); });
+  ipcMain.on('show-download-file', (_e, savePath) => shell.showItemInFolder(savePath));
+
   // settings
   ipcMain.handle('get-settings', () => ({ ...settings, version: app.getVersion(), chromium: process.versions.chrome }));
   ipcMain.on('set-settings', (_e, patch) => {
@@ -452,7 +552,6 @@ app.whenReady().then(() => {
   ipcMain.on('set-default-browser', () => {
     app.setAsDefaultProtocolClient('http');
     app.setAsDefaultProtocolClient('https');
-    // Windows requires the user to confirm in system settings
     require('electron').shell.openExternal('ms-settings:defaultapps');
   });
   ipcMain.on('clear-profile-data', async () => {
@@ -469,6 +568,7 @@ app.whenReady().then(() => {
     closePopup();
     if (action === 'new-tab') createTab();
     if (action === 'settings') openPopup('settings', 99999);
+    if (action === 'bookmarks') openPopup('bookmarks', 99999);
   });
 });
 

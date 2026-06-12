@@ -1,6 +1,6 @@
 {
   "name": "noctra",
-  "version": "1.0.4",
+  "version": "1.1.0",
   "description": "Noctra — the private browser that blocks ads, trackers and cookie walls by default.",
   "main": "main.js",
   "scripts": {

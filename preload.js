@@ -9,8 +9,10 @@ contextBridge.exposeInMainWorld('noctra', {
   goBack: () => ipcRenderer.send('go-back'),
   goForward: () => ipcRenderer.send('go-forward'),
   reload: () => ipcRenderer.send('reload'),
+  restoreTab: () => ipcRenderer.send('restore-tab'),
   onTabsUpdated: (cb) => ipcRenderer.on('tabs-updated', (_e, state) => cb(state)),
   onFocusUrl: (cb) => ipcRenderer.on('focus-url', () => cb()),
+  onBookmarkShortcut: (cb) => ipcRenderer.on('bookmark-shortcut', () => cb()),
 
   // popups
   openPopup: (type, anchorX) => ipcRenderer.send('open-popup', { type, anchorX }),
@@ -24,6 +26,18 @@ contextBridge.exposeInMainWorld('noctra', {
   getProfiles: () => ipcRenderer.invoke('get-profiles'),
   switchProfile: (name) => ipcRenderer.send('switch-profile', name),
   addProfile: (name) => ipcRenderer.send('add-profile', name),
+
+  // bookmarks
+  getBookmarks: () => ipcRenderer.invoke('get-bookmarks'),
+  addBookmark: (title, url) => ipcRenderer.send('add-bookmark', { title, url }),
+  removeBookmark: (url) => ipcRenderer.send('remove-bookmark', url),
+  navigateBookmark: (url) => ipcRenderer.send('navigate-bookmark', url),
+
+  // downloads
+  onDownloadsUpdated: (cb) => ipcRenderer.on('downloads-updated', (_e, list) => cb(list)),
+  openDownloadsFolder: () => ipcRenderer.send('open-downloads-folder'),
+  clearDownload: (id) => ipcRenderer.send('clear-download', id),
+  showDownloadFile: (savePath) => ipcRenderer.send('show-download-file', savePath),
 
   // settings
   getSettings: () => ipcRenderer.invoke('get-settings'),
