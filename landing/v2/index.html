@@ -163,6 +163,18 @@
 
   .dl-final { margin: 70px 0 20px; border: 1px solid var(--line); padding: 28px 22px; text-align: center; }
   .dl-final h2 { margin-top: 0; }
+
+  /* ---- live download stats (real numbers from github releases) ---- */
+  .stats { margin: 26px 0 10px; border: 1px solid var(--line); background: #0e120e; padding: 22px 20px; }
+  .stats .head { color: var(--dim); font-size: 12.5px; }
+  .stats .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; margin-top: 16px; background: var(--line); border: 1px solid var(--line); }
+  .stats .stat { background: #0c0f0c; padding: 18px 14px; text-align: center; }
+  .stats .stat .num { font-size: clamp(26px, 6vw, 38px); color: var(--green); font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; }
+  .stats .stat .lbl { color: var(--dim); font-size: 11px; letter-spacing: 1px; margin-top: 8px; text-transform: uppercase; }
+  .stats .foot { color: var(--dim); font-size: 11.5px; margin-top: 14px; }
+  .stats .foot a { color: var(--green); text-decoration: none; }
+  .stats .foot a:hover { text-decoration: underline; }
+  @media (max-width: 560px) { .stats .grid3 { grid-template-columns: 1fr; } }
   footer {
     border-top: 1px solid var(--line); margin-top: 50px;
     padding: 20px 0 50px; font-size: 11.5px; color: var(--dim);
@@ -397,7 +409,46 @@ GET  taboola.com/recommendations      <span class="ok">✕ BLOCKED</span>
     <div class="sub">~97 MB · windows 10/11 x64 · installs per-user, updates itself</div>
   </div>
 
+  <div class="stats" id="stats">
+    <div class="head"># we can't count users — the browser sends us nothing. but github counts every download in the open, and we just read that number back:</div>
+    <div class="grid3">
+      <div class="stat"><div class="num" id="s-total">·</div><div class="lbl">total downloads</div></div>
+      <div class="stat"><div class="num" id="s-latest">·</div><div class="lbl">latest version</div></div>
+      <div class="stat"><div class="num" id="s-releases">·</div><div class="lbl">releases shipped</div></div>
+    </div>
+    <div class="foot"># <span id="s-note">reading live from github releases…</span> · <a href="https://github.com/promptowy/noctra/releases" target="_blank" rel="noopener">verify it yourself →</a></div>
+  </div>
+
   <footer>© 2026 noctra — exit code 0. no cookies, no analytics on this page; view-source if you don't believe us.</footer>
 </div>
+<script>
+/* live download counter — real numbers, straight from the public github releases api.
+   no tracking, no backend: the page just fetches a public json and adds it up. */
+(function () {
+  var api = "https://api.github.com/repos/promptowy/noctra/releases";
+  var box = document.getElementById("stats");
+  var fmt = function (n) { return n.toLocaleString("en-US"); };
+  fetch(api, { headers: { "Accept": "application/vnd.github+json" } })
+    .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(function (rel) {
+      if (!Array.isArray(rel) || !rel.length) throw new Error("empty");
+      var total = 0, latest = null;
+      rel.forEach(function (x) {
+        if (!latest && !x.draft && !x.prerelease) latest = x.tag_name;
+        (x.assets || []).forEach(function (a) {
+          if (/^Noctra-Setup.*\.exe$/i.test(a.name)) total += (a.download_count || 0);
+        });
+      });
+      document.getElementById("s-total").textContent = fmt(total);
+      document.getElementById("s-latest").textContent = latest || "v1.1.0";
+      document.getElementById("s-releases").textContent = fmt(rel.length);
+      document.getElementById("s-note").textContent = "counted by github, not by us — updates every time you load this page";
+    })
+    .catch(function () {
+      /* offline / rate-limited: hide the strip rather than show a broken number */
+      if (box) box.style.display = "none";
+    });
+})();
+</script>
 </body>
 </html>
