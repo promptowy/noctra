@@ -1,25 +1,22 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script>
-/* privacy-first language switch: no ip lookup, no tracking call — just the
-   browser's own language hint. polish-speaking visitors land on /pl/ by default;
-   ?lang=en (or the header toggle) pins english and is remembered locally. */
+/* przelacznik jezyka bez sledzenia: zero zapytan geo-ip, tylko podpowiedz
+   jezyka przegladarki. anglojezyczni z zapamietanym wyborem "en" wracaja na /. */
 (function(){try{
   var q=new URLSearchParams(location.search);
-  if(q.get('lang')==='en'){localStorage.setItem('noctra_lang','en');return;}
-  if(q.get('lang')==='pl'){localStorage.setItem('noctra_lang','pl');location.replace('/pl/');return;}
-  var pref=localStorage.getItem('noctra_lang');
-  if(!pref){pref=(navigator.language||navigator.userLanguage||'').toLowerCase().indexOf('pl')===0?'pl':'en';}
-  if(pref==='pl'){location.replace('/pl/');}
+  if(q.get('lang')==='pl'){localStorage.setItem('noctra_lang','pl');return;}
+  if(q.get('lang')==='en'){localStorage.setItem('noctra_lang','en');location.replace('/?lang=en');return;}
+  if(localStorage.getItem('noctra_lang')==='en'){location.replace('/?lang=en');}
 }catch(e){}})();
 </script>
-<title>noctra — a browser that blocks ads &amp; trackers by default</title>
-<meta name="description" content="noctra is a Chromium browser that cancels ad and tracking requests before they leave your machine. Zero telemetry, zero configuration, isolated profiles. Free for Windows 10/11.">
-<meta name="keywords" content="private browser, ad blocker browser, anti-tracking browser, chromium privacy browser, no telemetry browser, cookie wall blocker, noctra">
-<link rel="canonical" href="https://noctra.one/">
+<title>noctra — przeglądarka, która domyślnie blokuje reklamy i śledzenie</title>
+<meta name="description" content="noctra to przeglądarka na silniku Chromium, która anuluje żądania reklam i śledzenia, zanim opuszczą Twój komputer. Zero telemetrii, zero konfiguracji, izolowane profile. Darmowa na Windows 10/11.">
+<meta name="keywords" content="prywatna przeglądarka, przeglądarka z blokadą reklam, przeglądarka antytrackingowa, chromium prywatność, przeglądarka bez telemetrii, blokada cookie wall, noctra">
+<link rel="canonical" href="https://noctra.one/pl/">
 <meta name="robots" content="index, follow, max-image-preview:large">
 <meta name="theme-color" content="#0c0f0c">
 <meta name="color-scheme" content="dark">
@@ -31,17 +28,17 @@
 <link rel="alternate" hreflang="x-default" href="https://noctra.one/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="noctra">
-<meta property="og:title" content="noctra — every tracker on every page: connection refused.">
-<meta property="og:description" content="A Chromium browser that cancels ad and tracking requests before they leave your machine. Zero telemetry. Zero configuration. Free for Windows.">
-<meta property="og:url" content="https://noctra.one/">
+<meta property="og:title" content="noctra — każdy tracker na każdej stronie: połączenie odrzucone.">
+<meta property="og:description" content="Przeglądarka Chromium, która anuluje żądania reklam i śledzenia, zanim opuszczą Twój komputer. Zero telemetrii. Zero konfiguracji. Darmowa na Windows.">
+<meta property="og:url" content="https://noctra.one/pl/">
 <meta property="og:image" content="https://noctra.one/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:locale" content="en">
-<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale" content="pl_PL">
+<meta property="og:locale:alternate" content="en">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="noctra — connection refused.">
-<meta name="twitter:description" content="A Chromium browser that blocks ads and trackers by default. Zero telemetry, zero config. Free for Windows.">
+<meta name="twitter:title" content="noctra — połączenie odrzucone.">
+<meta name="twitter:description" content="Przeglądarka Chromium blokująca reklamy i trackery domyślnie. Zero telemetrii, zero konfiguracji. Darmowa na Windows.">
 <meta name="twitter:image" content="https://noctra.one/og.png">
 <script type="application/ld+json">
 {
@@ -50,12 +47,13 @@
   "name": "noctra",
   "operatingSystem": "Windows 10, Windows 11",
   "applicationCategory": "BrowserApplication",
-  "description": "A Chromium-based browser that blocks ads, trackers and cookie walls by default, with zero telemetry and isolated colour-coded profiles.",
-  "url": "https://noctra.one/",
+  "inLanguage": "pl",
+  "description": "Przeglądarka na silniku Chromium, która domyślnie blokuje reklamy, trackery i cookie walle, bez telemetrii i z izolowanymi, kolorowanymi profilami.",
+  "url": "https://noctra.one/pl/",
   "downloadUrl": "https://github.com/promptowy/noctra/releases/latest",
   "softwareVersion": "1.1.0",
   "license": "https://opensource.org/licenses/MIT",
-  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "PLN" },
   "publisher": { "@type": "Organization", "name": "Promptowy", "url": "https://promptowy.pl" }
 }
 </script>
@@ -250,38 +248,38 @@
   <header>
     <span class="prompt">noctra</span>
     <nav>
-      <a href="#look">look</a>
-      <a href="#compare">vs others</a>
-      <a href="#numbers">numbers</a>
-      <a href="#features">features</a>
-      <a href="#why">why</a>
+      <a href="#look">wygląd</a>
+      <a href="#compare">vs inne</a>
+      <a href="#numbers">liczby</a>
+      <a href="#features">funkcje</a>
+      <a href="#why">dlaczego</a>
       <a href="#faq">faq</a>
-      <a href="#download">download</a>
-      <span class="langsw"><a href="/?lang=en" class="on" aria-current="true">EN</a><a href="/pl/?lang=pl">PL</a></span>
+      <a href="#download">pobierz</a>
+      <span class="langsw"><a href="/?lang=en">EN</a><a href="/pl/?lang=pl" class="on" aria-current="true">PL</a></span>
     </nav>
   </header>
 
   <div class="hero">
-    <h1>Every tracker on every page:<br><span class="g">connection refused.</span><span class="cursor"></span></h1>
-    <p>noctra is a Chromium-based browser that cancels ad and tracking requests before they leave your machine. cookie walls hidden. zero telemetry. zero configuration — protection is not a feature you toggle, it's the default state of the program.</p>
+    <h1>Każdy tracker na każdej stronie:<br><span class="g">połączenie odrzucone.</span><span class="cursor"></span></h1>
+    <p>noctra to przeglądarka na silniku Chromium, która anuluje żądania reklam i śledzenia, zanim opuszczą Twój komputer. Cookie walle znikają. Zero telemetrii. Zero konfiguracji - ochrona to nie funkcja, którą się włącza, tylko domyślny stan programu.</p>
     <div class="cta" id="download">
-      <a class="btn solid" href="https://github.com/promptowy/noctra/releases/latest/download/Noctra-Setup.exe">⬇ download for windows (.exe)</a>
-      <a class="btn" href="https://github.com/promptowy/noctra/releases">view releases on github</a>
+      <a class="btn solid" href="https://github.com/promptowy/noctra/releases/latest/download/Noctra-Setup.exe">⬇ pobierz na windows (.exe)</a>
+      <a class="btn" href="https://github.com/promptowy/noctra/releases">zobacz wydania na github</a>
     </div>
-    <div class="sub">windows 10/11 x64 · free · no account · auto-updates · MIT-licensed core</div>
+    <div class="sub">windows 10/11 x64 · za darmo · bez konta · auto-aktualizacje · rdzeń na licencji MIT</div>
   </div>
 
-  <div class="log-box"><div class="log"><span class="dim"># a typical news page, opened in noctra</span>
-GET  news-site.com/article            <span class="ok">200 OK</span>
-GET  cdn.news-site.com/styles.css     <span class="ok">200 OK</span>
-GET  google-analytics.com/collect     <span class="ok">✕ BLOCKED</span>
-GET  doubleclick.net/instream/ad      <span class="ok">✕ BLOCKED</span>
-GET  facebook.net/en_US/fbevents.js   <span class="ok">✕ BLOCKED</span>
-GET  taboola.com/recommendations      <span class="ok">✕ BLOCKED</span>
-<span class="dim"># page rendered. 4 requests never happened.</span></div></div>
+  <div class="log-box"><div class="log"><span class="dim"># typowa strona z newsami, otwarta w noctrze</span>
+GET  serwis-news.pl/artykul            <span class="ok">200 OK</span>
+GET  cdn.serwis-news.pl/styles.css     <span class="ok">200 OK</span>
+GET  google-analytics.com/collect     <span class="ok">✕ ZABLOKOWANE</span>
+GET  doubleclick.net/instream/ad      <span class="ok">✕ ZABLOKOWANE</span>
+GET  facebook.net/pl_PL/fbevents.js    <span class="ok">✕ ZABLOKOWANE</span>
+GET  taboola.com/recommendations      <span class="ok">✕ ZABLOKOWANE</span>
+<span class="dim"># strona wyrenderowana. 4 żądania nigdy się nie wydarzyły.</span></div></div>
 
-  <h2 id="look">what it looks like</h2>
-  <p class="lead"># the whole interface. there is no part two.</p>
+  <h2 id="look">jak to wygląda</h2>
+  <p class="lead"># cały interfejs. nie ma części drugiej.</p>
   <div class="mock-grid">
     <div>
       <div class="mock">
@@ -296,7 +294,7 @@ GET  taboola.com/recommendations      <span class="ok">✕ BLOCKED</span>
           <span class="nav">&lt; &gt; ⟳</span>
           <span class="urlbar">🔒 https://www.onet.pl/</span>
           <span class="chip shield">✕ 23</span>
-          <span class="chip profile-chip"><span style="color:#34d24b">■</span> Work ▾</span>
+          <span class="chip profile-chip"><span style="color:#34d24b">■</span> Praca ▾</span>
           <span class="chip">≡</span>
         </div>
         <div class="page">
@@ -309,8 +307,8 @@ GET  taboola.com/recommendations      <span class="ok">✕ BLOCKED</span>
           <span class="skel" style="top:184px; left:12px; width:50%; height:8px;"></span>
           <span class="skel" style="top:200px; left:12px; width:54%; height:8px;"></span>
           <div class="panel">
-            <div class="ph">$ shield<small>www.onet.pl</small></div>
-            <div class="sec"># trackers &amp; ads refused:</div>
+            <div class="ph">$ tarcza<small>www.onet.pl</small></div>
+            <div class="sec"># odrzucone trackery i reklamy:</div>
             <div class="prow"><span class="h">✕ onet.hit.gemius.pl</span><span class="c">9</span></div>
             <div class="pbar"><i style="width:100%"></i></div>
             <div class="prow"><span class="h">✕ doubleclick.net</span><span class="c">7</span></div>
@@ -319,173 +317,173 @@ GET  taboola.com/recommendations      <span class="ok">✕ BLOCKED</span>
             <div class="pbar"><i style="width:44%"></i></div>
             <div class="prow"><span class="h">✕ taboola.com</span><span class="c">3</span></div>
             <div class="pbar"><i style="width:33%"></i></div>
-            <div class="pfoot">23 blocked on this page · 312 this session</div>
+            <div class="pfoot">23 zablokowane na tej stronie · 312 w tej sesji</div>
           </div>
         </div>
       </div>
-      <div class="mock-cap"># click the ✕ counter — every refused tracker, named and counted. per-site off switch at the bottom for stubborn pages.</div>
+      <div class="mock-cap"># kliknij licznik ✕ - każdy odrzucony tracker, nazwany i policzony. na dole wyłącznik per-strona dla upartych witryn.</div>
     </div>
     <div>
       <div class="mock">
-        <div class="titlebar"><span class="moon">☾</span> profiles</div>
-        <div class="ph" style="padding:8px 10px; border-bottom:1px solid var(--line); color:var(--green); font-weight:700;">$ profiles<small style="display:block;color:var(--dim);font-weight:400;">separate cookies, logins &amp; storage — grouped</small></div>
-        <div class="sec"># work</div>
-        <div class="pitem"><span class="dot" style="background:#34d24b"></span>Client A<span class="key">active</span></div>
-        <div class="pitem"><span class="dot" style="background:#22d3ee"></span>Client B</div>
-        <div class="sec"># socials</div>
+        <div class="titlebar"><span class="moon">☾</span> profile</div>
+        <div class="ph" style="padding:8px 10px; border-bottom:1px solid var(--line); color:var(--green); font-weight:700;">$ profile<small style="display:block;color:var(--dim);font-weight:400;">osobne ciasteczka, logowania i pamięć - pogrupowane</small></div>
+        <div class="sec"># praca</div>
+        <div class="pitem"><span class="dot" style="background:#34d24b"></span>Klient A<span class="key">aktywny</span></div>
+        <div class="pitem"><span class="dot" style="background:#22d3ee"></span>Klient B</div>
+        <div class="sec"># social media</div>
         <div class="pitem"><span class="dot" style="background:#f472b6"></span>Instagram</div>
         <div class="pitem"><span class="dot" style="background:#fbbf24"></span>TikTok</div>
-        <div class="sec"># burner</div>
-        <div class="pitem"><span class="dot" style="background:#a78bfa"></span>Throwaway</div>
-        <div class="pfoot" style="border-top:1px solid var(--line); padding:8px 10px; color:var(--dim);">[ new profile name ] [ category ] <span style="color:var(--green); border:1px solid var(--green); padding:1px 6px;">add</span></div>
+        <div class="sec"># jednorazowy</div>
+        <div class="pitem"><span class="dot" style="background:#a78bfa"></span>Na chwilę</div>
+        <div class="pfoot" style="border-top:1px solid var(--line); padding:8px 10px; color:var(--dim);">[ nazwa profilu ] [ kategoria ] <span style="color:var(--green); border:1px solid var(--green); padding:1px 6px;">dodaj</span></div>
       </div>
-      <div class="mock-cap"># profiles grouped into categories — work, socials, burners. each is a sealed jar: colour-coded per tab, zero cross-contamination.</div>
+      <div class="mock-cap"># profile pogrupowane w kategorie - praca, social media, jednorazowe. każdy to szczelny słoik: kolor per karta, zero mieszania danych.</div>
     </div>
   </div>
 
-  <h2 id="compare">vs the others</h2>
-  <p class="lead"># green = good for you. red = good for someone else.</p>
+  <h2 id="compare">na tle innych</h2>
+  <p class="lead"># zielone = dobre dla Ciebie. czerwone = dobre dla kogoś innego.</p>
   <div class="vs">
     <div class="vs-row">
-      <div class="cap">ads &amp; trackers blocked out of the box</div>
+      <div class="cap">reklamy i trackery blokowane od razu po instalacji</div>
       <div class="vs-grid">
-        <div class="vs-cell noctra"><b>NOCTRA</b>✓ always</div>
-        <div class="vs-cell mid"><b>BRAVE</b>✓ can be off</div>
-        <div class="vs-cell mid"><b>FIREFOX</b>partial</div>
-        <div class="vs-cell bad"><b>CHROME</b>✗ none</div>
+        <div class="vs-cell noctra"><b>NOCTRA</b>✓ zawsze</div>
+        <div class="vs-cell mid"><b>BRAVE</b>✓ da się wyłączyć</div>
+        <div class="vs-cell mid"><b>FIREFOX</b>częściowo</div>
+        <div class="vs-cell bad"><b>CHROME</b>✗ wcale</div>
       </div>
     </div>
     <div class="vs-row">
-      <div class="cap">cookie walls hidden automatically</div>
+      <div class="cap">cookie walle chowane automatycznie</div>
       <div class="vs-grid">
-        <div class="vs-cell noctra"><b>NOCTRA</b>✓ yes</div>
-        <div class="vs-cell mid"><b>BRAVE</b>partial</div>
-        <div class="vs-cell mid"><b>FIREFOX</b>partial</div>
-        <div class="vs-cell bad"><b>CHROME</b>✗ none</div>
+        <div class="vs-cell noctra"><b>NOCTRA</b>✓ tak</div>
+        <div class="vs-cell mid"><b>BRAVE</b>częściowo</div>
+        <div class="vs-cell mid"><b>FIREFOX</b>częściowo</div>
+        <div class="vs-cell bad"><b>CHROME</b>✗ wcale</div>
       </div>
     </div>
     <div class="vs-row">
-      <div class="cap">per-page report of what got blocked</div>
+      <div class="cap">raport per strona: co zostało zablokowane</div>
       <div class="vs-grid">
-        <div class="vs-cell noctra"><b>NOCTRA</b>✓ click the ✕</div>
-        <div class="vs-cell good"><b>BRAVE</b>✓ yes</div>
-        <div class="vs-cell good"><b>FIREFOX</b>✓ yes</div>
+        <div class="vs-cell noctra"><b>NOCTRA</b>✓ kliknij ✕</div>
+        <div class="vs-cell good"><b>BRAVE</b>✓ tak</div>
+        <div class="vs-cell good"><b>FIREFOX</b>✓ tak</div>
         <div class="vs-cell na"><b>CHROME</b>—</div>
       </div>
     </div>
     <div class="vs-row">
-      <div class="cap">telemetry sent to the vendor</div>
+      <div class="cap">telemetria wysyłana do producenta</div>
       <div class="vs-grid">
         <div class="vs-cell noctra"><b>NOCTRA</b>zero</div>
-        <div class="vs-cell mid"><b>BRAVE</b>some</div>
-        <div class="vs-cell mid"><b>FIREFOX</b>some</div>
-        <div class="vs-cell bad"><b>CHROME</b>extensive</div>
+        <div class="vs-cell mid"><b>BRAVE</b>trochę</div>
+        <div class="vs-cell mid"><b>FIREFOX</b>trochę</div>
+        <div class="vs-cell bad"><b>CHROME</b>ogromna</div>
       </div>
     </div>
     <div class="vs-row">
-      <div class="cap">crypto / rewards / sponsored content</div>
+      <div class="cap">krypto / nagrody / treści sponsorowane</div>
       <div class="vs-grid">
-        <div class="vs-cell noctra"><b>NOCTRA</b>none</div>
-        <div class="vs-cell bad"><b>BRAVE</b>BAT + wallet</div>
-        <div class="vs-cell mid"><b>FIREFOX</b>sponsored tiles</div>
-        <div class="vs-cell good"><b>CHROME</b>none</div>
+        <div class="vs-cell noctra"><b>NOCTRA</b>brak</div>
+        <div class="vs-cell bad"><b>BRAVE</b>BAT + portfel</div>
+        <div class="vs-cell mid"><b>FIREFOX</b>kafelki sponsor.</div>
+        <div class="vs-cell good"><b>CHROME</b>brak</div>
       </div>
     </div>
     <div class="vs-row">
-      <div class="cap">settings screen length</div>
+      <div class="cap">długość ekranu ustawień</div>
       <div class="vs-grid">
-        <div class="vs-cell noctra"><b>NOCTRA</b>one popup</div>
-        <div class="vs-cell bad"><b>BRAVE</b>34 sub-pages</div>
-        <div class="vs-cell bad"><b>FIREFOX</b>12 sub-pages</div>
-        <div class="vs-cell bad"><b>CHROME</b>20+ sub-pages</div>
+        <div class="vs-cell noctra"><b>NOCTRA</b>jeden popup</div>
+        <div class="vs-cell bad"><b>BRAVE</b>34 podstrony</div>
+        <div class="vs-cell bad"><b>FIREFOX</b>12 podstron</div>
+        <div class="vs-cell bad"><b>CHROME</b>20+ podstron</div>
       </div>
     </div>
   </div>
 
-  <h2 id="numbers">one news page, by the numbers</h2>
+  <h2 id="numbers">jedna strona z newsami w liczbach</h2>
   <div class="chart">
-    <div class="crow"><span class="label">chrome</span><div class="track"><span class="fill bad" style="width:100%"></span></div><span>214 req</span></div>
-    <div class="crow"><span class="label">firefox</span><div class="track"><span class="fill mid" style="width:78%"></span></div><span>167 req</span></div>
-    <div class="crow"><span class="label">brave</span><div class="track"><span class="fill mid" style="width:52%"></span></div><span>111 req</span></div>
-    <div class="crow"><span class="label">noctra</span><div class="track"><span class="fill good" style="width:43%"></span></div><span>92 req</span></div>
-    <div class="note"># network requests made by a typical ad-funded news front page, default settings, cold cache. fewer requests = less data, less tracking, faster paint. measure your own: click the ✕ counter in noctra's toolbar.</div>
+    <div class="crow"><span class="label">chrome</span><div class="track"><span class="fill bad" style="width:100%"></span></div><span>214 żąd.</span></div>
+    <div class="crow"><span class="label">firefox</span><div class="track"><span class="fill mid" style="width:78%"></span></div><span>167 żąd.</span></div>
+    <div class="crow"><span class="label">brave</span><div class="track"><span class="fill mid" style="width:52%"></span></div><span>111 żąd.</span></div>
+    <div class="crow"><span class="label">noctra</span><div class="track"><span class="fill good" style="width:43%"></span></div><span>92 żąd.</span></div>
+    <div class="note"># żądania sieciowe typowej, utrzymywanej z reklam strony głównej serwisu z newsami, ustawienia domyślne, zimny cache. mniej żądań = mniej danych, mniej śledzenia, szybsze wczytanie. zmierz u siebie: kliknij licznik ✕ na pasku noctry.</div>
   </div>
 
-  <h2 id="features">what you get</h2>
+  <h2 id="features">co dostajesz</h2>
   <div class="grid">
     <div class="cell">
-      <h3>network-level blocking</h3>
-      <p>tracking domains are refused at the request layer. nothing downloads, nothing executes, nothing remembers you.</p>
+      <h3>blokada na poziomie sieci</h3>
+      <p>domeny śledzące są odrzucane na warstwie żądania. nic się nie pobiera, nic nie wykonuje, nic Cię nie zapamiętuje.</p>
     </div>
     <div class="cell">
-      <h3>cookie walls removed</h3>
-      <p>consent overlays, GDPR banners and adblock-detector nags are stripped from the DOM automatically.</p>
+      <h3>cookie walle usuwane</h3>
+      <p>nakładki zgód, banery RODO i wykrywacze adblocka są automatycznie zdejmowane z DOM.</p>
     </div>
     <div class="cell">
-      <h3>isolated profiles</h3>
-      <p>work / personal / burner — separate cookie jars, separate storage, colour-coded per tab. cross-contamination: impossible.</p>
+      <h3>izolowane profile</h3>
+      <p>praca / prywatne / jednorazowe - osobne słoiki ciasteczek, osobna pamięć, kolor per karta. mieszanie danych: niemożliwe.</p>
     </div>
     <div class="cell">
-      <h3>nothing phones home</h3>
-      <p>no telemetry endpoint exists in the codebase. the only server noctra talks to is the one you typed.</p>
+      <h3>nic nie dzwoni do domu</h3>
+      <p>w kodzie nie istnieje żaden endpoint telemetrii. jedyny serwer, z którym noctra rozmawia, to ten, który wpisałeś.</p>
     </div>
   </div>
 
-  <h2 id="why">why we built it</h2>
+  <h2 id="why">dlaczego ją zrobiliśmy</h2>
   <div class="manifesto">
-    <p><strong>browsers stopped working for the person holding the mouse.</strong> they work for ad markets, sponsored feeds, token economies and "engagement". every year the settings page grows by another screen of toggles you're supposed to understand — and the default for each one is whatever pays the vendor.</p>
-    <p>noctra is the opposite bet: <strong>a browser has one job</strong> — fetch the page you asked for, show it, and shut up. blocking surveillance is not a feature to configure; it's part of fetching the page correctly. that's why the shield has no global off switch — only a per-site one, for pages that hold their content hostage — the settings fit in one popup, and the only counter on screen counts what we refused to load <strong>on your behalf</strong>.</p>
-    <p>it's built on chromium, so every site works. it's MIT-licensed at the core, so you can read exactly what it does. and it sends us nothing, so we honestly don't know how many of you there are. <strong>feels right.</strong></p>
+    <p><strong>przeglądarki przestały działać dla osoby trzymającej mysz.</strong> działają dla rynków reklamowych, sponsorowanych feedów, ekonomii tokenów i "zaangażowania". co roku strona ustawień rośnie o kolejny ekran przełączników, które masz rzekomo rozumieć - a domyślna wartość każdego z nich to ta, która płaci producentowi.</p>
+    <p>noctra to zakład o coś przeciwnego: <strong>przeglądarka ma jedno zadanie</strong> - pobrać stronę, o którą poprosiłeś, pokazać ją i zamilknąć. blokowanie inwigilacji to nie funkcja do konfiguracji; to część poprawnego pobrania strony. dlatego tarcza nie ma globalnego wyłącznika - tylko per-strona, dla witryn, które trzymają treść jak zakładnika - ustawienia mieszczą się w jednym popupie, a jedyny licznik na ekranie liczy to, czego odmówiliśmy załadowania <strong>w Twoim imieniu</strong>.</p>
+    <p>jest zbudowana na chromium, więc każda strona działa. rdzeń jest na licencji MIT, więc możesz przeczytać dokładnie, co robi. i nie wysyła nam nic, więc szczerze nie wiemy, ilu Was jest. <strong>i tak ma być.</strong></p>
   </div>
 
   <h2 id="faq">faq</h2>
   <div class="faq">
     <dl>
-      <dt>is it really free?</dt>
-      <dd>yes. no premium tier, no token, no "rewards program". a browser, not a business model.</dd>
-      <dt>will sites break?</dt>
-      <dd>rarely. blocking is surgical — content requests pass, surveillance requests don't. and if a site holds its content hostage, click the ✕ and lower the shield for that one site only.</dd>
-      <dt>chromium? so it's like chrome?</dt>
-      <dd>same engine, opposite philosophy. full web compatibility, none of the reporting back.</dd>
-      <dt>does it remember my tabs?</dt>
-      <dd>yes — by default noctra reopens exactly where you left off, profiles included. switchable to a clean homepage start in settings.</dd>
-      <dt>can it be my default browser?</dt>
-      <dd>yes. settings → "make noctra the default browser" registers it with windows; links from other apps open in noctra.</dd>
-      <dt>does it need admin rights?</dt>
-      <dd>no. the installer is per-user — one click, no UAC prompt, and it keeps itself up to date automatically.</dd>
-      <dt>windows says "unknown publisher"?</dt>
-      <dd>the build isn't code-signed yet (certificates cost money; the project is young). click "more info → run anyway", or read the source and build it yourself — it's all on github.</dd>
+      <dt>naprawdę za darmo?</dt>
+      <dd>tak. bez wersji premium, bez tokena, bez "programu nagród". przeglądarka, a nie model biznesowy.</dd>
+      <dt>czy strony będą się psuć?</dt>
+      <dd>rzadko. blokada jest chirurgiczna - żądania treści przechodzą, żądania inwigilacji nie. a jeśli strona trzyma treść jak zakładnika, kliknij ✕ i opuść tarczę tylko dla tej jednej witryny.</dd>
+      <dt>chromium? czyli jak chrome?</dt>
+      <dd>ten sam silnik, przeciwna filozofia. pełna zgodność ze stronami, zero raportowania z powrotem.</dd>
+      <dt>czy pamięta moje karty?</dt>
+      <dd>tak - domyślnie noctra otwiera się dokładnie tam, gdzie skończyłeś, razem z profilami. w ustawieniach można przełączyć na czysty start.</dd>
+      <dt>czy może być domyślną przeglądarką?</dt>
+      <dd>tak. ustawienia → "ustaw noctrę jako domyślną" rejestruje ją w windowsie; linki z innych aplikacji otwierają się w noctrze.</dd>
+      <dt>czy wymaga uprawnień administratora?</dt>
+      <dd>nie. instalator jest per-użytkownik - jedno kliknięcie, bez okna UAC, i sam się aktualizuje.</dd>
+      <dt>windows pokazuje "nieznany wydawca"?</dt>
+      <dd>build nie jest jeszcze podpisany certyfikatem (certyfikaty kosztują; projekt jest młody). kliknij "więcej informacji → uruchom mimo to", albo przeczytaj źródło i zbuduj sam - wszystko jest na github.</dd>
     </dl>
   </div>
 
   <div class="dl-final">
-    <h2 style="margin-top:0;">ready when you are</h2>
+    <h2 style="margin-top:0;">gotowa, kiedy Ty jesteś</h2>
     <div class="cta" style="justify-content:center; margin-top:20px;">
-      <a class="btn solid" href="https://github.com/promptowy/noctra/releases/latest/download/Noctra-Setup.exe">⬇ download for windows (.exe)</a>
-      <a class="btn" href="https://github.com/promptowy/noctra/releases">github releases</a>
+      <a class="btn solid" href="https://github.com/promptowy/noctra/releases/latest/download/Noctra-Setup.exe">⬇ pobierz na windows (.exe)</a>
+      <a class="btn" href="https://github.com/promptowy/noctra/releases">wydania na github</a>
     </div>
-    <div class="sub">~97 MB · windows 10/11 x64 · installs per-user, updates itself</div>
+    <div class="sub">~97 MB · windows 10/11 x64 · instalacja per-użytkownik, sama się aktualizuje</div>
   </div>
 
   <div class="stats" id="stats">
-    <div class="head"># we can't count users — the browser sends us nothing. but github counts every download in the open, and we just read that number back:</div>
+    <div class="head"># nie liczymy użytkowników - przeglądarka nic nam nie wysyła. ale github liczy każde pobranie jawnie, a my tylko odczytujemy tę liczbę:</div>
     <div class="grid3">
-      <div class="stat"><div class="num" id="s-total">·</div><div class="lbl">total downloads</div></div>
-      <div class="stat"><div class="num" id="s-latest">·</div><div class="lbl">latest version</div></div>
-      <div class="stat"><div class="num" id="s-releases">·</div><div class="lbl">releases shipped</div></div>
+      <div class="stat"><div class="num" id="s-total">·</div><div class="lbl">wszystkich pobrań</div></div>
+      <div class="stat"><div class="num" id="s-latest">·</div><div class="lbl">najnowsza wersja</div></div>
+      <div class="stat"><div class="num" id="s-releases">·</div><div class="lbl">wydań łącznie</div></div>
     </div>
-    <div class="foot"># <span id="s-note">reading live from github releases…</span> · <a href="https://github.com/promptowy/noctra/releases" target="_blank" rel="noopener">verify it yourself →</a></div>
+    <div class="foot"># <span id="s-note">czytam na żywo z github releases…</span> · <a href="https://github.com/promptowy/noctra/releases" target="_blank" rel="noopener">sprawdź sam →</a></div>
   </div>
 
-  <footer>© 2026 noctra — exit code 0. no cookies, no analytics on this page; view-source if you don't believe us.</footer>
+  <footer>© 2026 noctra — kod wyjścia 0. na tej stronie zero ciasteczek i zero analityki; nie wierzysz - zobacz źródło.</footer>
 </div>
 <script>
-/* live download counter — real numbers, straight from the public github releases api.
-   no tracking, no backend: the page just fetches a public json and adds it up. */
+/* licznik pobrań na żywo — realne liczby prosto z publicznego api github releases.
+   zero śledzenia, zero backendu: strona pobiera publiczny json i go sumuje. */
 (function () {
   var api = "https://api.github.com/repos/promptowy/noctra/releases";
   var box = document.getElementById("stats");
-  var fmt = function (n) { return n.toLocaleString("en-US"); };
+  var fmt = function (n) { return n.toLocaleString("pl-PL"); };
   fetch(api, { headers: { "Accept": "application/vnd.github+json" } })
     .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
     .then(function (rel) {
@@ -500,10 +498,10 @@ GET  taboola.com/recommendations      <span class="ok">✕ BLOCKED</span>
       document.getElementById("s-total").textContent = fmt(total);
       document.getElementById("s-latest").textContent = latest || "v1.1.0";
       document.getElementById("s-releases").textContent = fmt(rel.length);
-      document.getElementById("s-note").textContent = "counted by github, not by us — updates every time you load this page";
+      document.getElementById("s-note").textContent = "liczone przez github, nie przez nas — odświeża się przy każdym wejściu";
     })
     .catch(function () {
-      /* offline / rate-limited: hide the strip rather than show a broken number */
+      /* offline / limit zapytań: chowamy pasek zamiast pokazywać zepsutą liczbę */
       if (box) box.style.display = "none";
     });
 })();
