@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>noctra · admin — statystyki na żywo</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#0c0f0c">
+<meta name="color-scheme" content="dark">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<style>
+  :root{
+    --bg:#0c0f0c; --fg:#d7e0d7; --dim:#5f6f5f; --green:#34d24b;
+    --red:#d24b4b; --amber:#d2a834; --cyan:#22d3ee; --line:#1d241d; --panel:#0e120e;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:"Cascadia Mono",Consolas,"JetBrains Mono",monospace;background:var(--bg);color:var(--fg);font-size:14px;line-height:1.6}
+  .wrap{max-width:1000px;margin:0 auto;padding:0 20px 80px}
+  header{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:18px 0;border-bottom:1px solid var(--line)}
+  .prompt{white-space:nowrap;font-weight:700}
+  .prompt::before{content:"$ ";color:var(--green)}
+  .prompt .flag{color:var(--dim);font-weight:400}
+  header nav{display:flex;gap:16px;flex-wrap:wrap}
+  header nav a{color:var(--dim);text-decoration:none;font-size:12.5px}
+  header nav a:hover{color:var(--green)}
+  h1{font-size:18px;font-weight:400;margin:34px 0 4px}
+  h1::before{content:"## ";color:var(--dim)}
+  .lead{color:var(--dim);font-size:12.5px;margin-bottom:18px}
+  .bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:8px 0 22px;color:var(--dim);font-size:11.5px}
+  .btn{border:1px solid var(--green);color:var(--green);background:none;font:inherit;font-size:12px;padding:6px 12px;cursor:pointer}
+  .btn:hover{background:var(--green);color:var(--bg)}
+  /* tiles */
+  .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);margin-bottom:30px}
+  .tile{background:var(--bg);padding:18px 16px}
+  .tile .num{font-size:30px;font-weight:700;line-height:1.1;font-variant-numeric:tabular-nums;color:var(--green)}
+  .tile .num.alt{color:var(--fg)}
+  .tile .lbl{color:var(--dim);font-size:10.5px;letter-spacing:.8px;text-transform:uppercase;margin-top:8px}
+  .tile .sub{color:var(--dim);font-size:11px;margin-top:4px}
+  /* table */
+  table{width:100%;border-collapse:collapse;font-size:12.5px;margin-bottom:10px}
+  th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line)}
+  th{color:var(--dim);font-weight:400;font-size:10.5px;letter-spacing:.8px;text-transform:uppercase}
+  td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+  tr:hover td{background:var(--panel)}
+  .tag{color:var(--green);font-weight:700}
+  .barcell{position:relative;height:6px;background:var(--line);width:100%;min-width:60px}
+  .barcell i{position:absolute;inset:0 auto 0 0;background:var(--green)}
+  .muted{color:var(--dim)}
+  .pill{display:inline-block;font-size:10px;padding:1px 6px;border:1px solid var(--line);color:var(--dim);margin-left:6px}
+  .pill.pre{color:var(--amber);border-color:rgba(210,168,52,.4)}
+  .note{color:var(--dim);font-size:11.5px;margin-top:14px;border-left:2px solid var(--line);padding-left:12px}
+  .err{color:var(--red);font-size:12.5px;padding:14px;border:1px solid rgba(210,75,75,.4);background:rgba(210,75,75,.07);margin:10px 0}
+  a.ext{color:var(--green);text-decoration:none}
+  a.ext:hover{text-decoration:underline}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+  @media(max-width:680px){.grid2{grid-template-columns:1fr}.tile .num{font-size:24px}}
+  .loading{color:var(--dim);padding:20px 0}
+  .kv{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:12.5px}
+  .kv .k{color:var(--dim)}
+  .kv .v{color:var(--fg);text-align:right;font-variant-numeric:tabular-nums}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="prompt">noctra <span class="flag">--admin</span></span>
+    <nav>
+      <a href="/">↗ strona live</a>
+      <a href="/pl/">↗ /pl</a>
+      <a href="https://github.com/promptowy/noctra" target="_blank" rel="noopener">↗ github</a>
+      <a href="https://github.com/promptowy/noctra/releases" target="_blank" rel="noopener">↗ releases</a>
+    </nav>
+  </header>
+
+  <h1>statystyki na żywo</h1>
+  <p class="lead"># wszystkie liczby zaciągane bezpośrednio z publicznego API GitHuba przy każdym wejściu. zero backendu, zero zmyślania - to realne dane.</p>
+  <div class="bar">
+    <button class="btn" id="refresh">↻ odśwież</button>
+    <span id="status">ładowanie…</span>
+  </div>
+
+  <div id="err" class="err" style="display:none"></div>
+
+  <div class="tiles" id="tiles">
+    <div class="tile"><div class="num" id="t-total">·</div><div class="lbl">pobrań łącznie</div><div class="sub" id="t-total-sub">installer .exe</div></div>
+    <div class="tile"><div class="num" id="t-latest">·</div><div class="lbl">pobrań najnowszej</div><div class="sub" id="t-latest-sub">&nbsp;</div></div>
+    <div class="tile"><div class="num alt" id="t-releases">·</div><div class="lbl">wydań</div><div class="sub" id="t-releases-sub">&nbsp;</div></div>
+    <div class="tile"><div class="num alt" id="t-stars">·</div><div class="lbl">gwiazdki</div><div class="sub" id="t-forks-sub">&nbsp;</div></div>
+    <div class="tile"><div class="num alt" id="t-issues">·</div><div class="lbl">otwarte issues</div><div class="sub">&nbsp;</div></div>
+    <div class="tile"><div class="num alt" id="t-avg">·</div><div class="lbl">śr. pobrań / wydanie</div><div class="sub">&nbsp;</div></div>
+  </div>
+
+  <div class="grid2">
+    <div>
+      <h1>pobrania per wersja</h1>
+      <p class="lead"># installer Noctra-Setup.exe, wszystkie wydania.</p>
+      <table id="rel-table">
+        <thead><tr><th>wersja</th><th>data</th><th class="n">pobrań</th><th style="width:34%">udział</th></tr></thead>
+        <tbody id="rel-body"><tr><td colspan="4" class="loading">ładowanie wydań…</td></tr></tbody>
+      </table>
+      <div class="note" id="rel-note"></div>
+    </div>
+    <div>
+      <h1>repozytorium</h1>
+      <p class="lead"># metadane projektu, live.</p>
+      <div class="kv" id="repo-kv"><div class="loading">ładowanie…</div></div>
+
+      <h1 style="margin-top:34px">czego tu nie ma</h1>
+      <p class="note">Liczba unikalnych odwiedzin i wyświetleń strony (GitHub Traffic API) wymaga prywatnego tokenu z uprawnieniami do repo - nie da się jej pokazać na stronie bez hasła, nie ujawniając tokenu. Dlatego panel pokazuje tylko dane w 100% publiczne i realne: pobrania, wydania, gwiazdki, issues. Odwiedziny sprawdzisz zalogowany: <a class="ext" href="https://github.com/promptowy/noctra/graphs/traffic" target="_blank" rel="noopener">github → Insights → Traffic</a>.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+/* noctra admin — realne statystyki z publicznego GitHub API (bez auth, bez backendu). */
+(function(){
+  var REPO = "promptowy/noctra";
+  var API  = "https://api.github.com/repos/" + REPO;
+  var $ = function(id){ return document.getElementById(id); };
+  var fmt = function(n){ return (n||0).toLocaleString("pl-PL"); };
+  var dateFmt = function(s){ if(!s) return "—"; try{ return new Intl.DateTimeFormat("pl-PL",{year:"numeric",month:"short",day:"numeric"}).format(new Date(s)); }catch(e){ return s.slice(0,10); } };
+  var timeFmt = function(s){ try{ return new Intl.DateTimeFormat("pl-PL",{hour:"2-digit",minute:"2-digit",second:"2-digit"}).format(new Date(s)); }catch(e){ return ""; } };
+  var isExe = function(name){ return /^Noctra-Setup.*\.exe$/i.test(name); };
+
+  function showErr(msg){ var e=$("err"); e.style.display="block"; e.textContent="⚠ "+msg; }
+
+  function load(){
+    $("status").textContent = "ładowanie…";
+    $("err").style.display = "none";
+    Promise.all([
+      fetch(API,           {headers:{Accept:"application/vnd.github+json"}}).then(r=>r.ok?r.json():Promise.reject("repo "+r.status)),
+      fetch(API+"/releases?per_page=100",{headers:{Accept:"application/vnd.github+json"}}).then(r=>r.ok?r.json():Promise.reject("releases "+r.status))
+    ]).then(function(res){
+      var repo = res[0], releases = res[1] || [];
+      render(repo, releases);
+      $("status").textContent = "zaktualizowano o " + timeFmt(Date.now() ? new Date() : new Date());
+    }).catch(function(e){
+      showErr("Nie udało się pobrać danych z GitHuba ("+e+"). Limit API to 60 zapytań/godz. na IP - spróbuj za chwilę.");
+      $("status").textContent = "błąd";
+    });
+  }
+
+  function render(repo, releases){
+    // per-release exe downloads
+    var rows = releases.map(function(x){
+      var dl = 0;
+      (x.assets||[]).forEach(function(a){ if(isExe(a.name)) dl += (a.download_count||0); });
+      return { tag:x.tag_name||x.name||"?", date:x.published_at||x.created_at, dl:dl, pre:!!x.prerelease, draft:!!x.draft };
+    });
+    var total = rows.reduce(function(s,r){ return s+r.dl; }, 0);
+    var maxDl = rows.reduce(function(m,r){ return Math.max(m,r.dl); }, 0) || 1;
+    var latest = null;
+    for(var i=0;i<rows.length;i++){ if(!rows[i].pre && !rows[i].draft){ latest=rows[i]; break; } }
+    if(!latest && rows.length) latest = rows[0];
+    var relCount = releases.length;
+
+    // tiles
+    $("t-total").textContent    = fmt(total);
+    $("t-latest").textContent   = latest ? fmt(latest.dl) : "0";
+    $("t-latest-sub").textContent = latest ? latest.tag : "";
+    $("t-releases").textContent = fmt(relCount);
+    $("t-releases-sub").textContent = relCount ? ("od " + dateFmt(rows[rows.length-1].date)) : "";
+    $("t-stars").textContent    = fmt(repo.stargazers_count);
+    $("t-forks-sub").textContent = fmt(repo.forks_count) + " forków · " + fmt(repo.subscribers_count) + " obserwujących";
+    $("t-issues").textContent   = fmt(repo.open_issues_count);
+    $("t-avg").textContent      = relCount ? fmt(Math.round(total/relCount)) : "0";
+
+    // table
+    var body = $("rel-body");
+    body.innerHTML = "";
+    if(!rows.length){ body.innerHTML = '<tr><td colspan="4" class="muted">brak wydań</td></tr>'; }
+    rows.forEach(function(r){
+      var tr = document.createElement("tr");
+      var pct = Math.round(r.dl/maxDl*100);
+      tr.innerHTML =
+        '<td><span class="tag">'+r.tag+'</span>'+(r.pre?'<span class="pill pre">pre</span>':'')+(r.draft?'<span class="pill">draft</span>':'')+'</td>'+
+        '<td class="muted">'+dateFmt(r.date)+'</td>'+
+        '<td class="n">'+fmt(r.dl)+'</td>'+
+        '<td><div class="barcell"><i style="width:'+pct+'%"></i></div></td>';
+      body.appendChild(tr);
+    });
+    $("rel-note").textContent = "# suma: " + fmt(total) + " pobrań installera we wszystkich " + fmt(relCount) + " wydaniach.";
+
+    // repo kv
+    var kv = $("repo-kv");
+    kv.innerHTML = "";
+    var pairs = [
+      ["nazwa", repo.full_name],
+      ["licencja", (repo.license && repo.license.spdx_id) || "—"],
+      ["gałąź domyślna", repo.default_branch],
+      ["rozmiar repo", fmt(Math.round((repo.size||0)/1024)) + " MB"],
+      ["gwiazdki", fmt(repo.stargazers_count)],
+      ["forki", fmt(repo.forks_count)],
+      ["obserwujący", fmt(repo.subscribers_count)],
+      ["otwarte issues", fmt(repo.open_issues_count)],
+      ["utworzono", dateFmt(repo.created_at)],
+      ["ostatni push", dateFmt(repo.pushed_at)]
+    ];
+    pairs.forEach(function(p){
+      var k=document.createElement("div"); k.className="k"; k.textContent=p[0];
+      var v=document.createElement("div"); v.className="v"; v.textContent=p[1]!=null?p[1]:"—";
+      kv.appendChild(k); kv.appendChild(v);
+    });
+  }
+
+  $("refresh").addEventListener("click", load);
+  load();
+})();
+</script>
+</body>
+</html>
